@@ -26,7 +26,6 @@ it easier to extend the current row. If you are at the end of a line that alread
 a space-pipe-space, pressing tab will remove this trailing pipe and move the cursor to the 
 start of the next cell. 
 
-
-
-
-
+Screenshot
+==========
+![screenshot](https://raw.githubusercontent.com/boakley/brackets-robotframework/master/images/robot-mode.png)
