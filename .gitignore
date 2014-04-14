@@ -1,0 +1,8 @@
+# -*- mode: gitignore; -*-
+
+*.pyc
+
+# emacs crud
+\#*\#
+*.elc
+*~
