@@ -132,7 +132,6 @@ var robot = (function (self) {
             // Return true if this is column 0 in a test case or keyword table
             if (state.column === 0 && (state.isTestCasesTable() || state.isKeywordsTable())) {
                 state.tc_or_kw_name = stream.current();
-                console.log("name:", state.tc_or_kw_name);
                 return true;
             }
             return false;
@@ -285,7 +284,6 @@ var robot = (function (self) {
         // attempt to auto-indent; this will return true if it does
         // something which this block shouldn't mess with. 
 	if (!auto_indent(cm, pos)) {
-	    console.log("NOT autoindent");
 	    // if we are at the end of the line and we're not preceeded by
 	    // "| ", AND we're not in a table header, insert " | ".
             // Otherwise, move cursor to the next line. Or something like that.
@@ -303,8 +301,6 @@ var robot = (function (self) {
                     } else if (!currentLine.match(/ \|\s+$/)) {
 		        cm.replaceRange(" | ", pos);
 		        return;
-		    } else {
-			console.log("ouch.");
 		    }
                 }
             }
