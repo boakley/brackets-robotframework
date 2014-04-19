@@ -23,8 +23,13 @@ press Tab again, you will end up with "| | ... | ".
 
 If you are at the end of a line, you can press tab to insert a pipe-space-pipe, making
 it easier to extend the current row. If you are at the end of a line that already has
-a space-pipe-space, pressing tab will remove this trailing pipe and move the cursor to the 
-start of the next cell. 
+a space-pipe-space, pressing tab will remove this trailing pipe, then insert a newline
+and enough pipes and spaces and continuation characters to match the line you were
+just on. 
+
+This is an experimental feature. The goal is to be able to make editing more effecient,
+by letting you press tab rather than space-pipe-space, and to intelligently insert the
+appropriate number of pipes and spaces based on context.
 
 Screenshot
 ==========
