@@ -3,6 +3,8 @@
 var robot = (function (self) {
     "use strict"; 
 
+    var CodeMirror = brackets.getModule("thirdparty/CodeMirror2/lib/codemirror") 
+
     function overlay_mode(config, parserConfig) {
         // This defines an overlay mode that matches robot 
         // variables (eg: ${...}. 
@@ -22,7 +24,7 @@ var robot = (function (self) {
                     }
 		    return "variable";
 	        }
-                // skip to the next occurance of a variab
+                // skip to the next occurance of a variable
 	        while (stream.next() != null && !stream.match("${", false)) {}
 	        return null;
 	    }
@@ -376,7 +378,6 @@ var robot = (function (self) {
 	}
     }
     
-
     function fold_all(cm) {
         var currentLine = null;
         for (var l = cm.firstLine(); l <= cm.lastLine(); ++l) {
@@ -394,7 +395,15 @@ var robot = (function (self) {
 
 }(robot || {}));
 
-CodeMirror.defineMode("robot-variable", robot.overlay_mode);
-CodeMirror.defineMode("robot", robot.base_mode);
-CodeMirror.defineMIME("text/x-robot", "robot");
-CodeMirror.registerHelper("fold", "robot", robot.rangeFinder);
+if (typeof brackets !== "undefined") {
+    // to silence warnings when used in brackets (brackets.io)
+    var cm = brackets.getModule("thirdparty/CodeMirror2/lib/codemirror") ;
+} else {
+    // use the global variable in other contexts
+    var cm = CodeMirror;
+}
+
+cm.defineMode("robot-variable", robot.overlay_mode);
+cm.defineMode("robot", robot.base_mode);
+cm.defineMIME("text/x-robot", "robot");
+cm.registerHelper("fold", "robot", robot.rangeFinder);
