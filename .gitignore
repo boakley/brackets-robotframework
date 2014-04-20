@@ -6,3 +6,8 @@
 \#*\#
 *.elc
 *~
+
+# robot logs. 
+log.html
+report.html
+output.xml
