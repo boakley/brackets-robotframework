@@ -3,8 +3,6 @@
 var robot = (function (self) {
     "use strict"; 
 
-    var CodeMirror = brackets.getModule("thirdparty/CodeMirror2/lib/codemirror") 
-
     function overlay_mode(config, parserConfig) {
         // This defines an overlay mode that matches robot 
         // variables (eg: ${...}. 
@@ -257,15 +255,15 @@ var robot = (function (self) {
             var curLine = cm.getLine(i);
             if (curLine.match(endPattern)) {
 		var result={
-		    from: CodeMirror.Pos(start.line, startLine.length),
-                    to: CodeMirror.Pos(i-1, curLine.length)
+		    from: {line: start.line, ch: startLine.length},
+                    to: {line: i-1, ch: curLine.length}
 		};
 		return result;
             };
         };
         // if we fell through the loop, fold to the end of the file
-        return {from: CodeMirror.Pos(start.line, startLine.length),
-                to: CodeMirror.Pos(i, curLine.length)}
+        return {from: {line: start.line, ch: startLine.length},
+                to: {line: i, ch: curLine.length}}
     }
 
 
@@ -344,14 +342,14 @@ var robot = (function (self) {
                 if (state.isTestCasesTable() || state.isKeywordsTable()) {
                     // line begins with "| "; insert another space-pipe-space
 		    cm.replaceRange("| | ", 
-				    CodeMirror.Pos(pos.line, 0), 
-				    CodeMirror.Pos(pos.line, currentLine.length));
+				    {line: pos.line, ch: 0}, 
+				    {line: pos.line, ch: currentLine.length});
 		    return true;
 	        } else {
                     // not a testcase or keyword table; insert a continuation line
 		    cm.replaceRange("| ... | ",
-				    CodeMirror.Pos(pos.line, 0), 
-				    CodeMirror.Pos(pos.line, currentLine.length));
+				    {line: pos.line, ch: 0}, 
+				    {line: pos.line, ch: currentLine.length});
 		    return true;
                 }
 	    }
@@ -361,8 +359,8 @@ var robot = (function (self) {
 	    if (state.isTestCasesTable() || state.isKeywordsTable()) {
 		// insert a testcase / keyword continuation
 		cm.replaceRange("| | ... | ", 
-				CodeMirror.Pos(pos.line, 0), 
-				CodeMirror.Pos(pos.line, currentLine.length));
+				{line: pos.line, ch: 0}, 
+				{line: pos.line, ch: currentLine.length});
 		return true;
 	    }
 	    return false;
