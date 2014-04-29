@@ -6,6 +6,8 @@
 //                  one particular keyword
 
 define(function(require, exports, module) {
+    'use strict';
+
     function KeywordLibrary(name, path) {
 	this.name = name;
 	this.path = path;
@@ -22,21 +24,25 @@ define(function(require, exports, module) {
 	return false;
     };
 
-    KeywordLibrary.prototype.keywords = function() {
+    KeywordLibrary.prototype.keywords = function(pattern /* optional */) {
 	var result = [];
-	for (var i = 0; i < self._keywords.length; i++) {
-	    result.push(self._keywords[i].name);
+	for (var i = 0; i < this._keywords.length; i++) {
+            var name = this._keywords[i].name
+            if (pattern && (! name.match(pattern))) {
+                continue
+            }
+            result.push(name);
 	}
 	return result;
     };
 
-    KeywordLibrary.prototype.add_keyword = function(name, arguments, doc) {
-	this._keywords.push(new Keyword(name, arguments, doc));
+    KeywordLibrary.prototype.add_keyword = function(name, args, doc) {
+	this._keywords.push(new Keyword(name, args, doc));
     };
 
-    function Keyword(name, arguments, doc) {
+    function Keyword(name, args, doc) {
 	this.name = name.trim();
-	this.arguments = arguments;
+	this.args = args;
 	this.doc = doc;
     };
 
