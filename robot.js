@@ -7,12 +7,12 @@ define(function(require, exports, module) {
         // This defines an overlay mode that matches robot 
         // variables (eg: ${...}. 
         var overlay = {
-	    token: function(stream, state) {
-	        var c;
+            token: function(stream, state) {
+                var c;
                 var brace_count;
-	        if (stream.match("${")) {
+                if (stream.match("${")) {
                     brace_count = 1;
-		    while ((c = stream.next()) != null) {
+                    while ((c = stream.next()) != null) {
                         if (c === "{") {
                             brace_count += 1;
                         } else if (c === "}") {
@@ -20,12 +20,12 @@ define(function(require, exports, module) {
                             if (brace_count <= 0) {break; }
                         }
                     }
-		    return "variable";
-	        }
+                    return "variable";
+                }
                 // skip to the next occurance of a variable
-	        while (stream.next() != null && !stream.match("${", false)) {}
-	        return null;
-	    }
+                while (stream.next() != null && !stream.match("${", false)) {}
+                return null;
+            }
         };
         return overlay;
     };
@@ -256,45 +256,45 @@ define(function(require, exports, module) {
     }
 
     function rangeFinder(cm, start) {
-	// find ranges that can be folded -- sections (settings, varibles, 
-	// etc), keyword definitions and test case definitions
+        // find ranges that can be folded -- sections (settings, varibles, 
+        // etc), keyword definitions and test case definitions
 
         // FIXME: stop at the last non-blank line of a block rather than the first
         // line of the next block 
         var startLine = cm.getLine(start.line);
-	var endPattern = null;
-	var state = cm.getStateAfter(start.line);
+        var endPattern = null;
+        var state = cm.getStateAfter(start.line);
 
         var heading_pattern = /^\s*\*+\s*(settings?|metadata|variables?|test( cases?)?|(user )?keywords?)[ *]*$/i;
-	var first_cell_pattern = /^\|\s+[a-z]/i;
+        var first_cell_pattern = /^\|\s+[a-z]/i;
 
-	if (startLine.match(heading_pattern)) {
+        if (startLine.match(heading_pattern)) {
             // Found a heading? Everything up to the next heading or EOF 
             // is foldable region
-	    endPattern = heading_pattern;
+            endPattern = heading_pattern;
 
-	} else if ((state.table_name == "test_cases" || 
-		    state.table_name == "keywords") &&
-		   startLine.match(first_cell_pattern)) {
+        } else if ((state.table_name == "test_cases" || 
+                    state.table_name == "keywords") &&
+                   startLine.match(first_cell_pattern)) {
             // The beginning of a test case or keyword? Fold up to 
             // the next test case, keyword, or heading (though,
             // we actually go to a line that is _probabaly_ a heading
             // to keep the pattern short)
             endPattern = new RegExp(/^\|\s+[^\|]|^\s*\*+/);
 
-	} else {
-	    // the current line is not a valid fold point...
-	    return false;
-	}
+        } else {
+            // the current line is not a valid fold point...
+            return false;
+        }
 
         for (var i = start.line + 1, end = cm.lineCount(); i < end; ++i) {
             var curLine = cm.getLine(i);
             if (curLine.match(endPattern)) {
-		var result={
-		    from: {line: start.line, ch: startLine.length},
+                var result={
+                    from: {line: start.line, ch: startLine.length},
                     to: {line: i-1, ch: curLine.length}
-		};
-		return result;
+                };
+                return result;
             };
         };
         // if we fell through the loop, fold to the end of the file
@@ -306,117 +306,117 @@ define(function(require, exports, module) {
     function on_tab(cm) {
         // maybe-possibly insert a pipe, or move to the next
         // table cell. 
-	//
-	// blank line  : insert '| '
-	// '| '        : replace with '| | ' if in a testcase or keyword
-	// '| | '      : replace with '| | ... | ' 
-	//
-	// if at EOL, and line ends with space-pipe, remove the space-pipe,
-	// insert a newline, and match the leading characters of the line
+        //
+        // blank line  : insert '| '
+        // '| '        : replace with '| | ' if in a testcase or keyword
+        // '| | '      : replace with '| | ... | ' 
+        //
+        // if at EOL, and line ends with space-pipe, remove the space-pipe,
+        // insert a newline, and match the leading characters of the line
 
-	var pos = cm.getCursor();
-	var currentLine = cm.getLine(pos.line);
+        var pos = cm.getCursor();
+        var currentLine = cm.getLine(pos.line);
 
         // attempt to auto-indent; this will return true if it does
         // something which this block shouldn't mess with. 
-	if (!auto_indent(cm, pos)) {
-	    // if we are at the end of the line and we're not preceeded by
-	    // "| ", AND we're not in a table header, insert " | ".
+        if (!auto_indent(cm, pos)) {
+            // if we are at the end of the line and we're not preceeded by
+            // "| ", AND we're not in a table header, insert " | ".
             // Otherwise, move cursor to the next line. Or something like that.
             var token = cm.getTokenAt(pos);
             if (token.type != "header" && token.type != "comment") {
-	        if (pos.ch == currentLine.length) { // cursor at eol
+                if (pos.ch == currentLine.length) { // cursor at eol
                     if (currentLine.match(/ +\|\s*$/)) {
                         // trailing empty cell; remove it and go to 
                         // the next line
-	                var cursor = cm.getSearchCursor(/(\s+)\|\s*/, pos);
+                        var cursor = cm.getSearchCursor(/(\s+)\|\s*/, pos);
                         var match = cursor.findPrevious();
                         cursor.replace("");
-			newline_and_indent(cm, pos);
+                        newline_and_indent(cm, pos);
                         return;
                     } else if (!currentLine.match(/ \|\s+$/)) {
-		        cm.replaceRange(" | ", pos);
-		        return;
-		    }
+                        cm.replaceRange(" | ", pos);
+                        return;
+                    }
                 }
             }
-	    // all else fails, try moving to the next column
-	    move_to_next_cell(cm, pos);
-	}
+            // all else fails, try moving to the next column
+            move_to_next_cell(cm, pos);
+        }
     }
 
     function newline_and_indent(cm, pos) {
-	// insert a newline, then match the indentation of the line
-	var currentLine = cm.getLine(pos.line);
-	var match = currentLine.match(/^([.|\s]+)/);
-	if (match) {
-	    cm.replaceRange("\n" + match[0], pos);
-	} else {
-	    cm.replaceRange("\n", pos);
-	}
+        // insert a newline, then match the indentation of the line
+        var currentLine = cm.getLine(pos.line);
+        var match = currentLine.match(/^([.|\s]+)/);
+        if (match) {
+            cm.replaceRange("\n" + match[0], pos);
+        } else {
+            cm.replaceRange("\n", pos);
+        }
     }
     
     function auto_indent(cm, pos) {
-	// attempt to insert an appropriate number of leading 
+        // attempt to insert an appropriate number of leading 
         // pipes on a line
 
-	// FIXME: this code may be working too hard; in many cases
-	// I probably should just insert whatever the previous
-	// line has.
+        // FIXME: this code may be working too hard; in many cases
+        // I probably should just insert whatever the previous
+        // line has.
 
-	var state = cm.getStateAfter(pos.line);
-	var currentLine = cm.getLine(pos.line);
+        var state = cm.getStateAfter(pos.line);
+        var currentLine = cm.getLine(pos.line);
 
-	if (currentLine === "") {
-	    // blank line; insert "| "
-	    cm.replaceRange("| ", pos)
-	    return true;
-	}
-	if (currentLine.match(/^\|\s+$/)) {
+        if (currentLine === "") {
+            // blank line; insert "| "
+            cm.replaceRange("| ", pos)
+            return true;
+        }
+        if (currentLine.match(/^\|\s+$/)) {
             // one pipe and some spaces
             if (typeof state != "undefined") {
                 if (state.isTestCasesTable() || state.isKeywordsTable()) {
                     // line begins with "| "; insert another space-pipe-space
-		    cm.replaceRange("| | ", 
-				    {line: pos.line, ch: 0}, 
-				    {line: pos.line, ch: currentLine.length});
-		    return true;
-	        } else {
+                    cm.replaceRange("| | ", 
+                                    {line: pos.line, ch: 0}, 
+                                    {line: pos.line, ch: currentLine.length});
+                    return true;
+                } else {
                     // not a testcase or keyword table; insert a continuation line
-		    cm.replaceRange("| ... | ",
-				    {line: pos.line, ch: 0}, 
-				    {line: pos.line, ch: currentLine.length});
-		    return true;
+                    cm.replaceRange("| ... | ",
+                                    {line: pos.line, ch: 0}, 
+                                    {line: pos.line, ch: currentLine.length});
+                    return true;
                 }
-	    }
-	    return false;
-	}
-	if (currentLine.match(/^\|\s+\|\s+$/)) {
-	    if (state.isTestCasesTable() || state.isKeywordsTable()) {
-		// insert a testcase / keyword continuation
-		cm.replaceRange("| | ... | ", 
-				{line: pos.line, ch: 0}, 
-				{line: pos.line, ch: currentLine.length});
-		return true;
-	    }
-	    return false;
-	}
-	return false; 
+            }
+            return false;
+        }
+        if (currentLine.match(/^\|\s+\|\s+$/)) {
+            if (state.isTestCasesTable() || state.isKeywordsTable()) {
+                // insert a testcase / keyword continuation
+                cm.replaceRange("| | ... | ", 
+                                {line: pos.line, ch: 0}, 
+                                {line: pos.line, ch: currentLine.length});
+                return true;
+            }
+            return false;
+        }
+        return false; 
     }
 
     function move_to_next_cell(cm, pos) {
         // move the cursor to the first character in the next cell
-	var cursor = cm.getSearchCursor(/(^|\s+)\|\s+/, pos);
-	if (cursor.findNext()) {
-	    cm.setCursor(cursor.to());
-	}
+        var cursor = cm.getSearchCursor(/(^|\s+)\|\s+/, pos);
+        if (cursor.findNext()) {
+            cm.setCursor(cursor.to());
+        }
     }
     
     function fold_all(cm) {
         var currentLine = null;
         for (var l = cm.firstLine(); l <= cm.lastLine(); ++l) {
             var token = cm.getTokenAt({line:l, ch: 1})
-	        currentLine = cm.getLine(l);
+                currentLine = cm.getLine(l);
                 cm.foldCode({line: l, ch: 0}, null, "fold"); 
         }
     }
@@ -427,6 +427,3 @@ define(function(require, exports, module) {
     exports.on_tab = on_tab;
     exports.get_current_cell = get_current_cell;
 })
-
-
-
