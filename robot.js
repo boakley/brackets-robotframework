@@ -1,6 +1,6 @@
 // robot.js - editing mode for robotframework pipe-separated text format
 
-var robot = (function (self) {
+define(function(require, exports, module) {
     "use strict"; 
 
     function overlay_mode(config, parserConfig) {
@@ -174,6 +174,10 @@ var robot = (function (self) {
                     return "meta";
                 } else if (stream.match(/atom/)) {
                     return "atom";
+                } else if (stream.match(/operator/)) {
+                    return "operator";
+                } else if (stream.match(/def/)) {
+                    return "def";
                 } else if (stream.match(/variable/)) {
                     return "variable";
                 } else if (stream.match(/attribute/)) {
@@ -199,9 +203,13 @@ var robot = (function (self) {
                 }
 
                 // yipes! pipes! 
+                // don't ever use "operator" for anything but pipes,
+                // so we can use this token type when parsing 
+                // the contents of the widget later (or should I define
+                // my own tag and css style?)
                 if (isSeparator(stream, state)) {
                     state.column += 1;
-                    return "meta";
+                    return "operator";
                 }
 
                 var c;
@@ -217,6 +225,34 @@ var robot = (function (self) {
             }
         };
 
+    }
+
+    // FIXME: this is close, but not precisely correct.
+    function get_current_cell(cm, pos) {
+        var token = cm.getTokenAt(pos)
+
+        // back up to the end of the previous separator
+        while (token.type != "operator" && pos.ch > 0) {
+            pos.ch--;
+            token = cm.getTokenAt(pos)
+        }
+        var start = {"line": pos.line, "ch": pos.ch};
+
+        // now jump forward to the next separator
+        var line_length = cm.getLine(pos.line).length;
+        pos.ch++
+        token = cm.getTokenAt(pos)
+        while (token.type != "operator" && pos.ch < line_length) {
+            pos.ch++
+            token = cm.getTokenAt(pos)
+        }
+        if (pos.ch < line_length) {
+            pos.ch--;
+        }
+        
+        var end = pos;
+        var contents = cm.getRange(start, end);
+        return {start: start, end: end, text: contents};
     }
 
     function rangeFinder(cm, start) {
@@ -385,23 +421,12 @@ var robot = (function (self) {
         }
     }
 
-    self.overlay_mode = overlay_mode;
-    self.base_mode = base_mode;
-    self.rangeFinder = rangeFinder;
-    self.on_tab = on_tab;
-    return self
+    exports.overlay_mode = overlay_mode;
+    exports.base_mode = base_mode;
+    exports.rangeFinder = rangeFinder;
+    exports.on_tab = on_tab;
+    exports.get_current_cell = get_current_cell;
+})
 
-}(robot || {}));
 
-if (typeof brackets !== "undefined") {
-    // to silence warnings when used in brackets (brackets.io)
-    var cm = brackets.getModule("thirdparty/CodeMirror2/lib/codemirror") ;
-} else {
-    // use the global variable in other contexts
-    var cm = CodeMirror;
-}
 
-cm.defineMode("robot-variable", robot.overlay_mode);
-cm.defineMode("robot", robot.base_mode);
-cm.defineMIME("text/x-robot", "robot");
-cm.registerHelper("fold", "robot", robot.rangeFinder);

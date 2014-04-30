@@ -8,7 +8,8 @@ define(function (require, exports, module) {
     var FileUtils       = brackets.getModule("file/FileUtils");
     var CodeHintManager = brackets.getModule("editor/CodeHintManager");
 
-    require("./robot");
+
+    var robot = require("./robot");
     var KeywordUtils = require("./keyword");
     var Hints = require("./hints");
 
@@ -75,11 +76,19 @@ define(function (require, exports, module) {
     // see https://github.com/adobe/brackets/wiki/New-Code-Hinting-API-Proposal
     CodeHintManager.registerHintProvider(new Hints.HintProvider(libraries), ["robot"], 1);
 
+    var cm = brackets.getModule("thirdparty/CodeMirror2/lib/codemirror") ;
+
+    cm.defineMode("robot-variable", robot.overlay_mode);
+    cm.defineMode("robot", robot.base_mode);
+    cm.defineMIME("text/x-robot", "robot");
+    cm.registerHelper("fold", "robot", robot.rangeFinder);
+
     LanguageManager.defineLanguage("robot", {
       name: "robot",
       mode: "robot",
       fileExtensions: ["robot"],
       lineComment: ["#"]
-  });
+    });
 });
+
 
