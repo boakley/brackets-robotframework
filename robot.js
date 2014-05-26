@@ -5,12 +5,13 @@ define(function(require, exports, module) {
 
     function overlay_mode(config, parserConfig) {
         // This defines an overlay mode that matches robot 
-        // variables (eg: ${...}. 
+        // variables (eg: ${...}, %{...}, @{...})
+	var var_prefix_regex = /[$%@]{/
         var overlay = {
             token: function(stream, state) {
                 var c;
                 var brace_count;
-                if (stream.match("${")) {
+                if (stream.match(var_prefix_regex)) {
                     brace_count = 1;
                     while ((c = stream.next()) != null) {
                         if (c === "{") {
@@ -23,7 +24,7 @@ define(function(require, exports, module) {
                     return "variable";
                 }
                 // skip to the next occurance of a variable
-                while (stream.next() != null && !stream.match("${", false)) {}
+                while (stream.next() != null && !stream.match(var_prefix_regex, false)) {}
                 return null;
             }
         };
