@@ -204,13 +204,14 @@ define(function(require, exports, module) {
                 }
 
                 // yipes! pipes! 
-                // don't ever use "operator" for anything but pipes,
-                // so we can use this token type when parsing 
-                // the contents of the widget later (or should I define
-                // my own tag and css style?)
+                // don't ever use "cell-separator" for anything
+                // but cell separators. We use this for parsing
+                // tokens in other places in the code. 
                 if (isSeparator(stream, state)) {
                     state.column += 1;
-                    return "operator";
+                    // this is a custom class (cm-cell-separator)
+                    // defined in main.js
+                    return "cell-separator";
                 }
 
                 var c;
@@ -233,7 +234,7 @@ define(function(require, exports, module) {
         var token = cm.getTokenAt(pos)
 
         // back up to the end of the previous separator
-        while (token.type != "operator" && pos.ch > 0) {
+        while (token.type != "cell-separator" && pos.ch > 0) {
             pos.ch--;
             token = cm.getTokenAt(pos)
         }
@@ -243,7 +244,7 @@ define(function(require, exports, module) {
         var line_length = cm.getLine(pos.line).length;
         pos.ch++
         token = cm.getTokenAt(pos)
-        while (token.type != "operator" && pos.ch < line_length) {
+        while (token.type != "cell-separator" && pos.ch < line_length) {
             pos.ch++
             token = cm.getTokenAt(pos)
         }

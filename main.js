@@ -14,6 +14,14 @@ define(function (require, exports, module) {
 
     var libraries = []; // list of dictionaries, one per library
 
+    // I want pipes to be fairly faint; instead of using a color,
+    // we'll make it really opaque via a custom class.  This seems to
+    // work fairly well in a number of color schemes, though I need
+    // more real-world testing. Maybe this should be a preference?
+    var node = document.createElement("style");
+    node.innerHTML = ".cm-cell-separator {opacity: 0.3;}"
+    document.body.appendChild(node);
+
     function initializeUI() {
         // do some mode-specific initialization that can only be done after 
         // an editor has been instantiated.
