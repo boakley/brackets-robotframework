@@ -322,9 +322,10 @@ define(function(require, exports, module) {
         // attempt to auto-indent; this will return true if it does
         // something which this block shouldn't mess with. 
         if (!auto_indent(cm, pos)) {
-            // if we are at the end of the line and we're not preceeded by
-            // "| ", AND we're not in a table header, insert " | ".
-            // Otherwise, move cursor to the next line. Or something like that.
+            // if we are at the end of the line and we're not
+            // preceeded by a separator AND we're not in a table
+            // header, insert a separator. Otherwise, trim the trailing
+            // empty cell and move to the next line. 
             var token = cm.getTokenAt(pos);
             if (token.type != "header" && token.type != "comment") {
                 if (pos.ch == currentLine.length) { // cursor at eol
@@ -337,7 +338,13 @@ define(function(require, exports, module) {
                         newline_and_indent(cm, pos);
                         return;
                     } else if (!currentLine.match(/ \|\s+$/)) {
-                        cm.replaceRange(" | ", pos);
+                        if (currentLine.match(/ +$/)) {
+                            // already trailing space, just add pipe-space
+                            cm.replaceRange("| ", pos)
+                        } else {
+                            // no trailing space; add space-pipe-space
+                            cm.replaceRange(" | ", pos);
+                        }
                         return;
                     }
                 }
