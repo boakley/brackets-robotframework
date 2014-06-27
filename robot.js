@@ -345,7 +345,12 @@ define(function(require, exports, module) {
             var token = cm.getTokenAt(pos);
             if (token.type != "header" && token.type != "comment") {
                 if (pos.ch == currentLine.length) { // cursor at eol
-                    if (currentLine.match(/ +\|\s*$/)) {
+                    if (currentLine.match(/\.\.\. +\|\s*$/)) {
+                        // continuation line
+                        newline_and_indent(cm, pos);
+                        return;
+
+                    } else if (currentLine.match(/ +\|\s*$/)) {
                         // trailing empty cell; remove it and go to 
                         // the next line
                         var cursor = cm.getSearchCursor(/(\s+)\|\s*/, pos);
@@ -353,6 +358,7 @@ define(function(require, exports, module) {
                         cursor.replace("");
                         newline_and_indent(cm, pos);
                         return;
+
                     } else if (!currentLine.match(/ \|\s+$/)) {
                         if (currentLine.match(/ +$/)) {
                             // already trailing space, just add pipe-space
@@ -379,6 +385,7 @@ define(function(require, exports, module) {
         } else {
             cm.replaceRange("\n", pos);
         }
+        
     }
     
     function auto_indent(cm, pos) {
