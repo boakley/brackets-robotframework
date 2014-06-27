@@ -269,9 +269,8 @@ define(function(require, exports, module) {
             pos.ch--;
         }
         
-        var end = pos;
-        var contents = cm.getRange(start, end);
-        return {start: start, end: end, text: contents};
+        var end = {"line": pos.line, "ch": pos.ch};
+        return {start: start, end: end, text: cm.getRange(start, end)};
     }
 
     function rangeFinder(cm, start) {
