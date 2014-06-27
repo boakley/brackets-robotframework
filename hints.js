@@ -53,13 +53,14 @@ define(function(require, exports, module) {
                     this.hints = ["[Default Tags]", "[Force Tags]", "[Test Setup]", 
 				  "[Test Teardown]", "[Test Template]", "[Test Timeout]"]
 		}
+                this.hints.sort();
 
             } else if (cell.text.match(/^\*+/)) {
 		// a heading
 		this.hints = ["*** Test Cases ***", 
 			      "*** Settings ***",
 			      "*** Keywords ***",
-			      "*** Variables ***"]
+			      "*** Variables ***"].sort();
 
 
 	    } else {
@@ -92,13 +93,7 @@ define(function(require, exports, module) {
 		}
 
 		$.ajaxSetup({ "async": true});
-		this.hints = keywords.sort(function(a,b) {
-                    if (a.keyword < b.keyword) 
-			return -1;
-                    if (a.keyword > b.keyword)
-			return 1;
-                    return 0;
-		})
+		this.hints = keywords.sort();
 	    }
             return this.hints.length > 0;
         }
