@@ -31,6 +31,7 @@ define(function(require, exports, module) {
         var cell = robot.get_current_cell(cm, pos);
         var hub_url = prefs.get("hub-url");
         var keyword_url = hub_url + "/api/keywords?pattern=^" + cell.text + "*"
+        var cell_number = robot.get_current_cell_number(cm, pos);
         var i;
         var keywords;
 
@@ -62,6 +63,24 @@ define(function(require, exports, module) {
 			      "*** Keywords ***",
 			      "*** Variables ***"].sort();
 
+
+            } else if (state.isSettingsTable() && cell_number === 0) {
+                var allowable = ["Library","Resource","Variables",
+                                 "Documentation", "Metadata", 
+                                 "Suite Setup", "Suite Teardown",
+                                 "Suite Precondition", "Suite Postcondition",
+                                 "Force Tags", "Default Tags",
+                                 "Test Setup", "Test Teardown",
+                                 "Test Precondition", "Test Postcondition",
+                                 "Test Template", "Test Timeout"].sort()
+
+                this.hints = [];
+                var pattern = new RegExp("^" + cell.text + ".*", "i");
+		for (i = 0; i < allowable.length; i++) {
+                    if (allowable[i].match(pattern)) {
+                        this.hints.push(allowable[i]);
+                    }
+                }
 
 	    } else {
 		// likely a keyword
@@ -105,7 +124,7 @@ define(function(require, exports, module) {
     };
 
     HintProvider.prototype.insertHint = function(hint) {
-        // The hint will contain the library name surrounded
+        // The hint may contain the library name surrounded
         // by <i></i>, which needs to be stripped off
         hint = hint.replace(/<i>.*<\/i>/,"");
         this.editor.document.replaceRange(hint, this.cell.start, this.cell.end);
