@@ -37,7 +37,7 @@ define(function (require, exports, module) {
         var DocumentManager = brackets.getModule("document/DocumentManager");
         var editor = EditorManager.getCurrentFullEditor()
 
-        if (editor.getModeForDocument() === "robot") {
+        if (editor && editor.getModeForDocument() === "robot") {
             var cm = editor ? editor._codeMirror : null;
             if (cm && (typeof editor.initialized === 'undefined' || !editor.initialized)) {
                 // I should probably be using the brackets manager APIs to
