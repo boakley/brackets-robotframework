@@ -229,6 +229,23 @@ define(function(require, exports, module) {
 
     }
 
+    function get_current_cell_number(cm, pos) {
+        // return cell number; cell after the first
+        // pipe is zero; if cursor is at the start of
+        // the line, return -1
+
+        var token = cm.getTokenAt(pos)
+        var num = -1
+        while (pos.ch > 0) {
+            token = cm.getTokenAt(pos)
+            if (token.type === "cell-separator") {
+                num += 1;
+            }
+            pos.ch = token.start;
+        }
+        return num;
+    }
+    
     // FIXME: this is close, but not precisely correct.
     function get_current_cell(cm, pos) {
         var token = cm.getTokenAt(pos)
@@ -435,4 +452,5 @@ define(function(require, exports, module) {
     exports.rangeFinder = rangeFinder;
     exports.on_tab = on_tab;
     exports.get_current_cell = get_current_cell;
+    exports.get_current_cell_number = get_current_cell_number;
 })
