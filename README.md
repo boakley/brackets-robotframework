@@ -9,7 +9,7 @@ primary features are:
 
 - Syntax highlighting
 - Code folding 
-- Special handling of the <tab> key
+- Special handling of the \<tab\> key
 
 Usage:
 
