@@ -10,6 +10,11 @@ primary features are:
 - Syntax highlighting
 - Code folding 
 - Special handling of the \<tab\> key
+- Code completion (if robotframework-hub is running)
+- Quickdocs for keywords (if robotframework-hub is running)
+
+For code completion and quickdocs you need to install and run 
+the robotframework hub. see https://github.com/boakley/robotframework-hub
 
 Usage:
 
