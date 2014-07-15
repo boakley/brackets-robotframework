@@ -15,10 +15,14 @@ define(function (require, exports, module) {
     var FileUtils       = brackets.getModule("file/FileUtils");
     var CodeHintManager = brackets.getModule("editor/CodeHintManager");
     var PreferencesManager = brackets.getModule("preferences/PreferencesManager");
+    var EditorManager   = brackets.getModule("editor/EditorManager");
+    var DocumentManager = brackets.getModule("document/DocumentManager");
 
     var robot = require("./robot");
     var Hints = require("./hints");
+    var inlinedocs = require("./inlinedocs");
 
+    var prefs = PreferencesManager.getExtensionPrefs("robotframework");
     var _prefs = PreferencesManager.getExtensionPrefs("robotframework");
     _prefs.definePreference("hub-url", "string", "http://localhost:7070");
 
@@ -33,8 +37,6 @@ define(function (require, exports, module) {
     function initializeUI() {
         // do some mode-specific initialization that can only be done after 
         // an editor has been instantiated.
-        var EditorManager   = brackets.getModule("editor/EditorManager");
-        var DocumentManager = brackets.getModule("document/DocumentManager");
         var editor = EditorManager.getCurrentFullEditor()
 
         if (editor && editor.getModeForDocument() === "robot") {
@@ -45,7 +47,6 @@ define(function (require, exports, module) {
                 var extraKeys = cm.getOption('extraKeys');
                 extraKeys.Tab = robot.on_tab;
                 cm.addOverlay(robot.overlay_mode());
-
             }
         }
     }
@@ -62,6 +63,9 @@ define(function (require, exports, module) {
     // see https://github.com/adobe/brackets/wiki/New-Code-Hinting-API-Proposal
     CodeHintManager.registerHintProvider(new Hints.HintProvider(), ["robot"], 1);
 
+    // register the inline help provider
+    EditorManager.registerInlineDocsProvider(inlinedocs.inlineDocsProvider); 
+
     var cm = brackets.getModule("thirdparty/CodeMirror2/lib/codemirror") ;
 
     cm.defineMode("robot-variable", robot.overlay_mode);
@@ -75,4 +79,5 @@ define(function (require, exports, module) {
       fileExtensions: ["robot"],
       lineComment: ["#"]
     });
+
 });

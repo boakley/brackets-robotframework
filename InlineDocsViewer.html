@@ -1,0 +1,26 @@
+<div class="keyword-defn" tabIndex="0"> 
+  <!-- tabIndex needed: otherwise click focuses CodeMirror scroller and Esc won't work -->
+  <div class="keyword-summary">
+    <h1>{{keyword_name}}</h1>
+    <h2>Library</h2>
+    {{keyword_library}}
+    <div><h2>Arguments:</h2>
+      <code>{{keyword_args}}</code>
+    </div>
+  </div>
+  <div class="divider-holder no-focus">
+    <div class="divider"></div>
+  </div>
+  <div class="keyword-doc quiet-scrollbars">
+    <div class="scroller" tabIndex="0"> 
+      <!-- tabIndex needed: otherwise can't be focused on open or via click -->
+      {{{keyword_doc}}}
+    </div>
+  </div>
+  <div class="content-bottom"></div>
+  <!-- FIXME: I don't have the right URL to use here (yet!) -->
+  <!-- This should point to the rfdocs /doc page for the keyword -->
+  <!-- <div class="bottom-links" style="{{BottomStyle}}"> -->
+  <!--   <a class="more-info" href="{{rfhub_url}}" title="{{rfhub_url}}">More Info...</a> -->
+  <!-- </div> -->
+</div>

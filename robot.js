@@ -46,9 +46,9 @@ define(function(require, exports, module) {
                     stream.next();
 
                 } else if (ch == " ") {
-                    // whitespace followed by pipe, then whitespace or EOL
+                    // space followed by pipe, then whitespace or EOL
                     // This signals the end of a cell in a row
-                    if (stream.match(/\s*\|(\s+|$)/, false)) {
+                    if (stream.match(/\|(\s|$)/, false)) {
                         stream.backUp(1);
                         break;
                     }
@@ -95,7 +95,7 @@ define(function(require, exports, module) {
 
         function isSeparator(stream, state) {
             // Return true if the stream is currently in a separator
-            var match = stream.match(/(^|\s+)\|(\s+|$)/)
+            var match = stream.match(/(^|\s)\|(\s|$)/)
             return match;
         }
 
@@ -246,30 +246,29 @@ define(function(require, exports, module) {
         return num;
     }
     
-    // FIXME: this is close, but not precisely correct.
     function get_current_cell(cm, pos) {
+        // this function assumes the "current cell" is a codemirror
+        // token. If the current token is a separator, we grab either
+        // the token immediately to the left or right depending on 
+        // where the cursor is. 
+        //
+        // If we ever change the tokenizer such that more than one
+        // token makes up a cell, this logic will have to be revisited.
+
         var token = cm.getTokenAt(pos)
-
-        // back up to the end of the previous separator
-        while (token.type != "cell-separator" && pos.ch > 0) {
-            pos.ch--;
-            token = cm.getTokenAt(pos)
-        }
-        var start = {"line": pos.line, "ch": pos.ch};
-
-        // now jump forward to the next separator
-        var line_length = cm.getLine(pos.line).length;
-        pos.ch++
-        token = cm.getTokenAt(pos)
-        while (token.type != "cell-separator" && pos.ch < line_length) {
-            pos.ch++
-            token = cm.getTokenAt(pos)
-        }
-        if (pos.ch < line_length) {
-            pos.ch--;
-        }
-        
-        var end = {"line": pos.line, "ch": pos.ch};
+        if (token.type === "cell-separator") {
+            if (pos.ch >= token.end-1) {
+                // we are on the right side of the separator, so
+                // grab the next token
+                token = cm.getTokenAt({line: pos.line, ch: token.end+1})
+            } else {
+                // we are on the left of the separator, so grab the
+                // previous token
+                token = cm.getTokenAt({line: pos.line, ch: token.start-1})
+            }
+        } 
+        var start = {line: pos.line, ch: token.start}
+        var end = {line: pos.line, ch: token.end};
         return {start: start, end: end, text: cm.getRange(start, end)};
     }
 
