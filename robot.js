@@ -140,7 +140,7 @@ define(function(require, exports, module) {
 
         function isComment(stream, state) {
             // Return true if a cell begins with a hash (and optional leading whitesp
-            if (stream.current().match("^\s*#")) {
+            if (stream.match(/^\s*#/)) {
                 return true;
             }
             return false;
@@ -198,6 +198,12 @@ define(function(require, exports, module) {
                     }
                 }
 
+                // inline comments
+                if (isComment(stream, state)) {
+                    stream.skipToEnd();
+                    return "comment";
+                }
+
                 // table headings (eg: *** Test Cases ***)
                 if (isHeading(stream, state)) {
                     return "header";
@@ -218,7 +224,6 @@ define(function(require, exports, module) {
                 if ((c=eatCellContents(stream, state))) {
                     // a table cell; it may be one of several flavors
                     if (isContinuation(stream, state)) {return "meta"; } 
-                    if (isComment(stream, state))      {return "comment"; }
                     if (isLocalSetting(stream, state)) {return "builtin"; }
                     if (isSetting(stream, state))      {return "attribute"; }
                     if (isName(stream, state))         {return "keyword"; }
