@@ -19,6 +19,7 @@ define(function (require, exports, module) {
     var DocumentManager = brackets.getModule("document/DocumentManager");
 
     var robot = require("./robot");
+    var argfile = require("./argfile_mode");
     var Hints = require("./hints");
     var inlinedocs = require("./inlinedocs");
 
@@ -68,6 +69,17 @@ define(function (require, exports, module) {
 
     var cm = brackets.getModule("thirdparty/CodeMirror2/lib/codemirror") ;
 
+    // new mode for robot argument files
+    cm.defineMode("robot_argfile", argfile.argfile_mode);
+    cm.defineMIME("text/x-robot-args", "argfile");
+    LanguageManager.defineLanguage("robot_argfile", {
+	name: "robot_argfile",
+	mode: "robot_argfile",
+	fileExtensions: ["args"],
+	lineComment: ["#"]
+    });
+
+    // the core robot mode
     cm.defineMode("robot-variable", robot.overlay_mode);
     cm.defineMode("robot", robot.base_mode);
     cm.defineMIME("text/x-robot", "robot");
