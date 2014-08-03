@@ -257,23 +257,35 @@ define(function(require, exports, module) {
         // the token immediately to the left or right depending on 
         // where the cursor is. 
         //
-        // If we ever change the tokenizer such that more than one
+        // If we ever change the tokenize such that more than one
         // token makes up a cell, this logic will have to be revisited.
 
         var token = cm.getTokenAt(pos)
+	var curline = cm.getLine(pos.line);
+	var start;
+	var end;
+
+	// special case -- we are at the eol, immediate after a cell
+	// separator.
+	if (token.type === "cell-separator" && pos.ch >= curline.length) {
+	    start = {line: pos.line, ch: token.end};
+	    end = start;
+	    return {start: start, end: end, text: ""}
+	}
+
         if (token.type === "cell-separator") {
             if (pos.ch >= token.end-1) {
                 // we are on the right side of the separator, so
-                // grab the next token
+                // grab the next token as the start of the cell
                 token = cm.getTokenAt({line: pos.line, ch: token.end+1})
             } else {
                 // we are on the left of the separator, so grab the
-                // previous token
+                // previous token as the start of the cell
                 token = cm.getTokenAt({line: pos.line, ch: token.start-1})
             }
         } 
-        var start = {line: pos.line, ch: token.start}
-        var end = {line: pos.line, ch: token.end};
+        start = {line: pos.line, ch: token.start}
+        end = {line: pos.line, ch: token.end};
         return {start: start, end: end, text: cm.getRange(start, end)};
     }
 
@@ -439,7 +451,6 @@ define(function(require, exports, module) {
         }
 
         if (pos.line > 1 && pos.ch == 0 && currentLine.match(/^[^|]/)) {
-            console.log("Attemting to match previous line...");
             var prevLine = cm.getLine(pos.line-1);
             var match = prevLine.match(/[| .]+/);
             if (match) {
