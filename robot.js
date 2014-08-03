@@ -437,6 +437,18 @@ define(function(require, exports, module) {
             }
             return false;
         }
+
+        if (pos.line > 1 && pos.ch == 0 && currentLine.match(/^[^|]/)) {
+            console.log("Attemting to match previous line...");
+            var prevLine = cm.getLine(pos.line-1);
+            var match = prevLine.match(/[| .]+/);
+            if (match) {
+                // If we found a match, use what we found as the prefix
+                // for this line
+                cm.replaceRange(match[0], {line: pos.line, ch: 0});
+                return true;
+            }
+        }
         return false; 
     }
 
