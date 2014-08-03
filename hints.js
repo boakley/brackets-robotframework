@@ -24,9 +24,10 @@ define(function(require, exports, module) {
 
     HintProvider.prototype.hasHints = function(editor, implicitChar) {
 
+	// I really don't like the implementation of this. Classic case
+	// of a quick hack getting out of control.
         var cm = editor._codeMirror;
         var pos = editor.getCursorPos();
-        var linestart = {line: pos.line, ch: 0};
         var state = cm.getStateAfter(pos.line);
         var cell = robot.get_current_cell(cm, pos);
         var hub_url = prefs.get("hub-url");
@@ -34,6 +35,7 @@ define(function(require, exports, module) {
         var cell_number = robot.get_current_cell_number(cm, pos);
         var i;
         var keywords;
+	var meta;
 
         this.editor = editor;
         this.hints = [];
@@ -45,24 +47,39 @@ define(function(require, exports, module) {
             // leading up to the insertion cursor...
             this.match = cell.text;
 
-            if (cell.text.match(/\[.*?\]/)) {
-		// metadata
+            if (cell.text.match(/\[.*?/) && cell_number === 1) {
+		// possible metadata
 		if (state.isTestCasesTable()) {
-                    this.hints = ["[Documentation]","[Tags]", "[Setup]", "[Teardown]", 
-				  "[Template]", "[Timeout]"]
-		} else if (state.isSettingsTable()) {
-                    this.hints = ["[Default Tags]", "[Force Tags]", "[Test Setup]", 
-				  "[Test Teardown]", "[Test Template]", "[Test Timeout]"]
+		    meta = ["[Documentation]","[Tags]", "[Setup]", "[Teardown]", 
+               		    "[Template]", "[Timeout]"];
+		} else if (state.isKeywordsTable()) {
+		    meta = ["[Documentation]", "[Arguments]", "[Return]", 
+			    "[Teardown]", "[Timeout]"];
+		} else {
+		    meta = [];
+		}
+
+		// remove trailing ], in case it was added by the auto-brace-matcher
+		// (or by the user...).
+		var prefix = cell.text.replace(/\]$/g, "").toLowerCase();
+		for (i = 0; i < meta.length; i++) {
+		    if (meta[i].toLowerCase().indexOf(prefix) == 0) {
+			this.hints.push(meta[i])
+		    }
 		}
                 this.hints.sort();
 
-            } else if (cell.text.match(/^\*+/)) {
-		// a heading
-		this.hints = ["*** Test Cases ***", 
-			      "*** Settings ***",
-			      "*** Keywords ***",
-			      "*** Variables ***"].sort();
-
+            } else if (cell.text.match(/^\*+\s*/)) {
+		// a potential table heading
+		var tmp = cell.text.replace(/^\*+\s*/,'');
+		var pattern = new RegExp("^" + tmp, 'i');
+		var tables = ["Keywords", "Settings", "Test Cases", "Variables"]
+		this.hints = [];
+		for (i = 0; i < 4 ; i++) {
+		    if (tables[i].match(pattern)) {
+			this.hints.push("*** " + tables[i] + " ***");
+		    };
+		}
 
             } else if (state.isSettingsTable() && cell_number === 0) {
                 var allowable = ["Library","Resource","Variables",
@@ -136,7 +153,7 @@ define(function(require, exports, module) {
         for (var i = 0; i < editor.lineCount(); i++) {
             var line = editor.document.getLine(i);
         }
-    }
+    };
 
     HintProvider.prototype._get_hints = function(state, prefix) {
 
