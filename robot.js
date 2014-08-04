@@ -480,6 +480,39 @@ define(function(require, exports, module) {
         }
     }
 
+    function select_current_statement() {
+        // Select all of the lines that make up a single statement.
+        // It does this by lookup up for the first non-continuation
+        // line, and then looking for the next non-continuation line.
+        var EditorManager = brackets.getModule("editor/EditorManager");
+        var editor = EditorManager.getCurrentFullEditor()
+        var pos = editor.getCursorPos()
+        var start = _find_statement_start(editor, pos);
+        var end = _find_statement_end(editor, pos);
+        editor.setCursorPos(start);
+        editor.setSelection(start, {line: end.line+1, ch: 0});
+    }
+
+    function _find_statement_end(editor, pos) {
+        var nextline = editor.document.getLine(pos.line+1);
+        while (nextline.match(/^\|\s+\|\s+\.\.\.\s+\|($|\s+)/)) {
+            pos.line += 1;
+            nextline = editor.document.getLine(pos.line+1);
+        }
+        return {line: pos.line, ch: pos.ch};
+    }
+
+    function _find_statement_start(editor, pos) {
+        var line = editor.document.getLine(pos.line);
+        // find start of statement
+        while (pos.line > 0 && line.match(/^\|\s+\|\s+\.\.\.\s+\|($|\s+)/)) {
+            pos.line -= 1;
+            line = editor.document.getLine(pos.line);
+        }
+        return {line: pos.line, ch: 0};
+    }
+
+    exports.select_current_statement = select_current_statement;
     exports.overlay_mode = overlay_mode;
     exports.base_mode = base_mode;
     exports.rangeFinder = rangeFinder;
