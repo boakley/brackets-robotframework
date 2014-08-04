@@ -3,7 +3,7 @@
     "title": "Robotframework support",
     "description": "Editing mode for Robotframework pipe-delimited plain text files",
     "homepage": "https://github.com/boakley/brackets-robotframework/wiki",
-    "version": "0.9.3",
+    "version": "0.9.4",
     "author": "Bryan Oakley <bryan.oakley@gmail.com>",
     "license": "MIT",
     "engines": {
