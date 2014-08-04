@@ -48,56 +48,16 @@ define(function(require, exports, module) {
             this.match = cell.text;
 
             if (cell.text.match(/\[.*?/) && cell_number === 1) {
-		// possible metadata
-		if (state.isTestCasesTable()) {
-		    meta = ["[Documentation]","[Tags]", "[Setup]", "[Teardown]", 
-               		    "[Template]", "[Timeout]"];
-		} else if (state.isKeywordsTable()) {
-		    meta = ["[Documentation]", "[Arguments]", "[Return]", 
-			    "[Teardown]", "[Timeout]"];
-		} else {
-		    meta = [];
-		}
-
 		// remove trailing ], in case it was added by the auto-brace-matcher
 		// (or by the user...).
-		var prefix = cell.text.replace(/\]$/g, "").toLowerCase();
-		for (i = 0; i < meta.length; i++) {
-		    if (meta[i].toLowerCase().indexOf(prefix) == 0) {
-			this.hints.push(meta[i])
-		    }
-		}
-                this.hints.sort();
+		this.hints = get_metadata_hints(cell.text, state);
 
             } else if (cell.text.match(/^\*+\s*/)) {
-		// a potential table heading
-		var tmp = cell.text.replace(/^\*+\s*/,'');
-		var pattern = new RegExp("^" + tmp, 'i');
-		var tables = ["Keywords", "Settings", "Test Cases", "Variables"]
-		this.hints = [];
-		for (i = 0; i < 4 ; i++) {
-		    if (tables[i].match(pattern)) {
-			this.hints.push("*** " + tables[i] + " ***");
-		    };
-		}
+		var prefix = cell.text.replace(/^\*+\s*/,'');
+		this.hints = get_heading_hints(prefix);
 
             } else if (state.isSettingsTable() && cell_number === 0) {
-                var allowable = ["Library","Resource","Variables",
-                                 "Documentation", "Metadata", 
-                                 "Suite Setup", "Suite Teardown",
-                                 "Suite Precondition", "Suite Postcondition",
-                                 "Force Tags", "Default Tags",
-                                 "Test Setup", "Test Teardown",
-                                 "Test Precondition", "Test Postcondition",
-                                 "Test Template", "Test Timeout"].sort()
-
-                this.hints = [];
-                var pattern = new RegExp("^" + cell.text + ".*", "i");
-		for (i = 0; i < allowable.length; i++) {
-                    if (allowable[i].match(pattern)) {
-                        this.hints.push(allowable[i]);
-                    }
-                }
+		this.hints = get_settings_hints(cell.text);
 
 	    } else {
 		// likely a keyword
@@ -147,6 +107,65 @@ define(function(require, exports, module) {
         this.editor.document.replaceRange(hint, this.cell.start, this.cell.end);
         return false;
     };
+
+    function get_settings_hints(prefix) {
+        var allowable = ["Library","Resource","Variables",
+            "Documentation", "Metadata", 
+            "Suite Setup", "Suite Teardown",
+            "Suite Precondition", "Suite Postcondition",
+            "Force Tags", "Default Tags",
+            "Test Setup", "Test Teardown",
+            "Test Precondition", "Test Postcondition",
+            "Test Template", "Test Timeout"].sort();
+
+	if (prefix.match(/^\s*$/)) {
+	    return allowable;
+	}
+        var hints = [];
+	prefix = prefix.replace(/^\s+/,"");
+	for (i = 0; i < allowable.length; i++) {
+	    if (allowable[i].toLowerCase().indexOf(prefix) === 0) {
+		hints.push(allowable[i]);
+	    }
+        }
+	return hints;
+    }
+
+    function get_metadata_hints(prefix, state) {
+	// possible metadata; prefix is expected to have a leading
+	// square bracket; a trailing square bracket will be ignored.
+	var meta = [];
+	var hints = [];
+	var i;
+	if (state.isTestCasesTable()) {
+	    meta = ["[Documentation]","[Tags]", "[Setup]", "[Teardown]", 
+               	    "[Template]", "[Timeout]"];
+	} else if (state.isKeywordsTable()) {
+	    meta = ["[Documentation]", "[Arguments]", "[Return]", 
+		    "[Teardown]", "[Timeout]"];
+	}
+
+	prefix = prefix.replace(/\]$/g, "").toLowerCase();
+	for (i = 0; i < meta.length; i++) {
+	    if (meta[i].toLowerCase().indexOf(prefix) == 0) {
+		hints.push(meta[i])
+	    }
+	}
+	return hints.sort();
+    }
+
+    function get_heading_hints(prefix) {
+	// Return all possible table headings matching the prefix
+	var pattern = new RegExp("^" + prefix, 'i');
+	var tables = ["Keywords", "Settings", "Test Cases", "Variables"];
+	var hints = [];
+	for (i = 0; i < 4 ; i++) {
+	    if (tables[i].match(pattern)) {
+		hints.push("*** " + tables[i] + " ***");
+	    };
+	}
+	return hints;
+    }
 
     function get_local_keywords(editor) {
         // not implemented yet...
