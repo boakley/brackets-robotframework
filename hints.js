@@ -122,7 +122,7 @@ define(function(require, exports, module) {
 	    return allowable;
 	}
         var hints = [];
-	prefix = prefix.replace(/^\s+/,"");
+	prefix = prefix.toLowerCase().replace(/^\s+/,"");
 	for (i = 0; i < allowable.length; i++) {
 	    if (allowable[i].toLowerCase().indexOf(prefix) === 0) {
 		hints.push(allowable[i]);
