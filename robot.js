@@ -300,7 +300,7 @@ define(function(require, exports, module) {
         var state = cm.getStateAfter(start.line);
 
         var heading_pattern = /^\s*\*+\s*(settings?|metadata|variables?|test( cases?)?|(user )?keywords?)[ *]*$/i;
-        var first_cell_pattern = /^\|\s+[a-z]/i;
+        var first_cell_pattern = /^\|\s+[^|\s]/i;
 
         if (startLine.match(heading_pattern)) {
             // Found a heading? Everything up to the next heading or EOF 
@@ -312,7 +312,7 @@ define(function(require, exports, module) {
                    startLine.match(first_cell_pattern)) {
             // The beginning of a test case or keyword? Fold up to 
             // the next test case, keyword, or heading (though,
-            // we actually go to a line that is _probabaly_ a heading
+            // we actually go to a line that is _probably_ a heading
             // to keep the pattern short)
             endPattern = new RegExp(/^\|\s+[^\|]|^\s*\*+/);
 
