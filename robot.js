@@ -161,34 +161,6 @@ define(function(require, exports, module) {
 
             token: function(stream, state) {
 
-                // these are a crutch for me during development, so I can
-                // see which styles have which colors
-                if (stream.match(/builtin/)) {
-                    return "builtin";
-                } else if (stream.match(/keyword/)) {
-                    return "keyword";
-                } else if (stream.match(/header/)) {
-                    return "header";
-                } else if (stream.match(/tag/)) {
-                    return "tag";
-                } else if (stream.match(/meta/)) {
-                    return "meta";
-                } else if (stream.match(/atom/)) {
-                    return "atom";
-                } else if (stream.match(/operator/)) {
-                    return "operator";
-                } else if (stream.match(/def/)) {
-                    return "def";
-                } else if (stream.match(/variable/)) {
-                    return "variable";
-                } else if (stream.match(/attribute/)) {
-                    return "attribute";
-                } else if (stream.match(/string/)) {
-                    return "string";
-                } else if (stream.match(/comment/)) {
-                    return "comment";
-                }
-
                 // comments at the start of a line
                 if (stream.sol()) {
                     state.column = -1;
