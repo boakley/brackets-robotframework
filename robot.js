@@ -211,14 +211,15 @@ define(function(require, exports, module) {
         // pipe is zero; if cursor is at the start of
         // the line, return -1
 
-        var token = cm.getTokenAt(pos)
-        var num = -1
-        while (pos.ch > 0) {
-            token = cm.getTokenAt(pos)
+        var token = cm.getTokenAt(pos);
+        var num = -1;
+        var p = {line: pos.line, ch: pos.ch};
+        while (p.ch > 0) {
+            token = cm.getTokenAt(p)
             if (token.type === "cell-separator") {
                 num += 1;
             }
-            pos.ch = token.start;
+            p.ch = token.start;
         }
         return num;
     }
