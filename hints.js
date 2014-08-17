@@ -199,7 +199,9 @@ define(function (require, exports, module) {
     function get_settings_hints(prefix) {
         // I hate hard-coding these. I wish robot had an API I could use
         // to fetch them. 
-        var allowable = ["Library", "Resource", "Variables",
+        var allowable = [
+            "...",
+            "Library", "Resource", "Variables",
             "Documentation", "Metadata",
             "Suite Setup", "Suite Teardown",
             "Suite Precondition", "Suite Postcondition",
@@ -227,10 +229,12 @@ define(function (require, exports, module) {
         var hints = [];
         var i;
         if (state.isTestCasesTable()) {
-            meta = ["[Documentation]", "[Tags]", "[Setup]", "[Teardown]",
+            // "..." is also valid in this context even though it's not
+            // metadata per se.
+            meta = ["...", "[Documentation]", "[Tags]", "[Setup]", "[Teardown]",
                     "[Template]", "[Timeout]"];
         } else if (state.isKeywordsTable()) {
-            meta = ["[Documentation]", "[Arguments]", "[Return]",
+            meta = ["...", "[Documentation]", "[Arguments]", "[Return]",
                     "[Teardown]", "[Timeout]"];
         }
 
