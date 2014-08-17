@@ -155,6 +155,7 @@ define(function (require, exports, module) {
                     table_name: null,
                     tc_or_kw_name: null,
                     column: -1,
+                    separator: "pipe",
                     isSettingsTable: function () {return (this.table_name === "settings"); },
                     isVariablesTable: function () {return (this.table_name === "variables"); },
                     isTestCasesTable: function () {return (this.table_name === "test_cases"); },
@@ -163,6 +164,17 @@ define(function (require, exports, module) {
             },
 
             token: function (stream, state) {
+
+                // determine separator mode -- pipes or spaces
+                if (stream.sol()) {
+                    if (stream.peek() === "|") {
+                        state.separator = "pipes";
+                        state.column = -1;
+                    } else {
+                        state.column = 0;
+                        state.separator = "spaces"
+                    }
+                }
 
                 // comments at the start of a line
                 if (stream.sol()) {
