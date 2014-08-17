@@ -1,19 +1,22 @@
 // robot.js - editing mode for robotframework pipe-separated text format
 
-define(function(require, exports, module) {
+/*jslint vars: true, plusplus: true, devel: true, nomen: true, indent: 4, maxerr: 50, regexp: true, */
+/*global define, brackets, $ */
+
+define(function (require, exports, module) {
     "use strict";
 
     function overlay_mode(config, parserConfig) {
         // This defines an overlay mode that matches robot
         // variables (eg: ${...}, %{...}, @{...})
-        var var_prefix_regex = /[$%@]{/
+        var var_prefix_regex = /[$%@]\{/;
         var overlay = {
             token: function(stream, state) {
                 var c;
                 var brace_count;
                 if (stream.match(var_prefix_regex)) {
                     brace_count = 1;
-                    while ((c = stream.next()) != null) {
+                    while ((c = stream.next()) !== null) {
                         if (c === "{") {
                             brace_count += 1;
                         } else if (c === "}") {
@@ -29,11 +32,11 @@ define(function(require, exports, module) {
             }
         };
         return overlay;
-    };
+    }
 
 
     // this is the main mode for robot files
-    function base_mode (config, parserConfig) {
+    function base_mode(config, parserConfig) {
 
         function eatCellContents(stream, state) {
             // gobble up characters until the end of the line or we find a separator
@@ -95,7 +98,7 @@ define(function(require, exports, module) {
 
         function isSeparator(stream, state) {
             // Return true if the stream is currently in a separator
-            var match = stream.match(/(^|\s)\|(\s|$)/)
+            var match = stream.match(/(^|\s)\|(\s|$)/);
             return match;
         }
 
@@ -147,19 +150,19 @@ define(function(require, exports, module) {
         }
 
         return {
-            startState: function() {
+            startState: function () {
                 return {
                     table_name: null,
                     tc_or_kw_name: null,
                     column: -1,
-                    isSettingsTable: function() {return (this.table_name === "settings"); },
-                    isVariablesTable: function() {return (this.table_name === "variables"); },
-                    isTestCasesTable: function() {return (this.table_name === "test_cases"); },
-                    isKeywordsTable: function() {return (this.table_name === "keywords"); },
+                    isSettingsTable: function () {return (this.table_name === "settings"); },
+                    isVariablesTable: function () {return (this.table_name === "variables"); },
+                    isTestCasesTable: function () {return (this.table_name === "test_cases"); },
+                    isKeywordsTable: function () {return (this.table_name === "keywords"); }
                 };
             },
 
-            token: function(stream, state) {
+            token: function (stream, state) {
 
                 // comments at the start of a line
                 if (stream.sol()) {
@@ -193,7 +196,7 @@ define(function(require, exports, module) {
                 }
 
                 var c;
-                if ((c=eatCellContents(stream, state))) {
+                if ((c = eatCellContents(stream, state))) {
                     // a table cell; it may be one of several flavors
                     if (isContinuation(stream, state)) {return "meta"; }
                     if (isLocalSetting(stream, state)) {return "builtin"; }
@@ -215,7 +218,7 @@ define(function(require, exports, module) {
         var num = -1;
         var p = {line: pos.line, ch: pos.ch};
         while (p.ch > 0) {
-            token = cm.getTokenAt(p)
+            token = cm.getTokenAt(p);
             if (token.type === "cell-separator") {
                 num += 1;
             }
@@ -233,7 +236,7 @@ define(function(require, exports, module) {
         // If we ever change the tokenize such that more than one
         // token makes up a cell, this logic will have to be revisited.
 
-        var token = cm.getTokenAt(pos)
+        var token = cm.getTokenAt(pos);
         var curline = cm.getLine(pos.line);
         var start;
         var end;
@@ -243,21 +246,21 @@ define(function(require, exports, module) {
         if (token.type === "cell-separator" && pos.ch >= curline.length) {
             start = {line: pos.line, ch: token.end};
             end = start;
-            return {start: start, end: end, text: ""}
+            return {start: start, end: end, text: ""};
         }
 
         if (token.type === "cell-separator") {
-            if (pos.ch >= token.end-1) {
+            if (pos.ch >= token.end - 1) {
                 // we are on the right side of the separator, so
                 // grab the next token as the start of the cell
-                token = cm.getTokenAt({line: pos.line, ch: token.end+1})
+                token = cm.getTokenAt({line: pos.line, ch: token.end + 1});
             } else {
                 // we are on the left of the separator, so grab the
                 // previous token as the start of the cell
-                token = cm.getTokenAt({line: pos.line, ch: token.start-1})
+                token = cm.getTokenAt({line: pos.line, ch: token.start - 1});
             }
         }
-        start = {line: pos.line, ch: token.start}
+        start = {line: pos.line, ch: token.start};
         end = {line: pos.line, ch: token.end};
         return {start: start, end: end, text: cm.getRange(start, end)};
     }
@@ -280,8 +283,8 @@ define(function(require, exports, module) {
             // is foldable region
             endPattern = heading_pattern;
 
-        } else if ((state.table_name == "test_cases" ||
-                    state.table_name == "keywords") &&
+        } else if ((state.table_name === "test_cases" ||
+                    state.table_name === "keywords") &&
                    startLine.match(first_cell_pattern)) {
             // The beginning of a test case or keyword? Fold up to
             // the next test case, keyword, or heading (though,
