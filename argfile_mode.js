@@ -1,19 +1,23 @@
 // A quick hack to support argument files. Not complete,
 // but it's better'n nuthin'
-define(function(require, exports, module) {
-    "use strict"; 
+
+/*jslint vars: true, plusplus: true, devel: true, nomen: true, indent: 4, maxerr: 50, regexp: true */
+/*global define, brackets, $ */
+
+define(function (require, exports, module) {
+    "use strict";
 
     function argfile_mode(config, parserConfig) {
         // This defines a simple mode for robotframework
         // argument files
 
         var mode = {
-            startState: function() {
+            startState: function () {
                 return {
-                    is_namevalue: false,
-                }; 
+                    is_namevalue: false
+                };
             },
-            token: function(stream, state) {
+            token: function (stream, state) {
                 if (stream.match(/^#.*$/)) {
                     state.is_namevalue = false;
                     return "comment";
@@ -27,24 +31,24 @@ define(function(require, exports, module) {
                     state.is_namevalue = false;
                     stream.eatSpace();
                     return "meta";
-                };
+                }
                 if (state.is_namevalue && stream.match(/\w+(?=:)/)) {
                     return "variable";
                 }
-		if (state.is_namevalue && stream.match(/[:=]/)) {
-		    return "operator";
-		}
-		if (state.is_namevalue) {
-		    stream.skipToEnd();
-		    state.is_namevalue = false;
-		    return "string";
-		}
-		stream.skipToEnd();
+                if (state.is_namevalue && stream.match(/[:=]/)) {
+                    return "operator";
+                }
+                if (state.is_namevalue) {
+                    stream.skipToEnd();
+                    state.is_namevalue = false;
+                    return "string";
+                }
+                stream.skipToEnd();
                 return null;
             }
         };
         return mode;
-    };
+    }
     
     exports.argfile_mode = argfile_mode;
 

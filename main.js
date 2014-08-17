@@ -5,6 +5,10 @@
    This module will use an url like "http://<service>/api/keywords?pattern
 */
 
+/*jslint vars: true, plusplus: true, devel: true, nomen: true, indent: 4, maxerr: 50, regexp: true */
+/*global define, brackets, $ */
+
+
 define(function (require, exports, module) {
     'use strict';
   
@@ -32,13 +36,13 @@ define(function (require, exports, module) {
     // though I need more real-world testing. Maybe this should be
     // a preference?
     var node = document.createElement("style");
-    node.innerHTML = ".cm-cell-separator {opacity: 0.3;}"
+    node.innerHTML = ".cm-cell-separator {opacity: 0.3;}";
     document.body.appendChild(node);
 
     function initializeUI() {
         // do some mode-specific initialization that can only be done after 
         // an editor has been instantiated.
-        var editor = EditorManager.getCurrentFullEditor()
+        var editor = EditorManager.getCurrentFullEditor();
 
         if (editor && editor.getModeForDocument() === "robot") {
             var cm = editor ? editor._codeMirror : null;
@@ -65,18 +69,18 @@ define(function (require, exports, module) {
     CodeHintManager.registerHintProvider(new Hints.HintProvider(), ["robot"], 1);
 
     // register the inline help provider
-    EditorManager.registerInlineDocsProvider(inlinedocs.inlineDocsProvider); 
+    EditorManager.registerInlineDocsProvider(inlinedocs.inlineDocsProvider);
 
-    var cm = brackets.getModule("thirdparty/CodeMirror2/lib/codemirror") ;
+    var cm = brackets.getModule("thirdparty/CodeMirror2/lib/codemirror");
 
     // new mode for robot argument files
     cm.defineMode("robot_argfile", argfile.argfile_mode);
     cm.defineMIME("text/x-robot-args", "argfile");
     LanguageManager.defineLanguage("robot_argfile", {
-	name: "robot_argfile",
-	mode: "robot_argfile",
-	fileExtensions: ["args"],
-	lineComment: ["#"]
+        name: "robot_argfile",
+        mode: "robot_argfile",
+        fileExtensions: ["args"],
+        lineComment: ["#"]
     });
 
     // the core robot mode
@@ -86,10 +90,10 @@ define(function (require, exports, module) {
     cm.registerHelper("fold", "robot", robot.rangeFinder);
 
     LanguageManager.defineLanguage("robot", {
-      name: "robot",
-      mode: "robot",
-      fileExtensions: ["robot"],
-      lineComment: ["#"]
+        name: "robot",
+        mode: "robot",
+        fileExtensions: ["robot"],
+        lineComment: ["#"]
     });
 
 });
