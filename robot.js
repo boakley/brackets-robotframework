@@ -1,12 +1,12 @@
 // robot.js - editing mode for robotframework pipe-separated text format
 
 define(function(require, exports, module) {
-    "use strict"; 
+    "use strict";
 
     function overlay_mode(config, parserConfig) {
-        // This defines an overlay mode that matches robot 
+        // This defines an overlay mode that matches robot
         // variables (eg: ${...}, %{...}, @{...})
-	var var_prefix_regex = /[$%@]{/
+        var var_prefix_regex = /[$%@]{/
         var overlay = {
             token: function(stream, state) {
                 var c;
@@ -64,7 +64,7 @@ define(function(require, exports, module) {
             // This function may return null if name isn't one of the
             // strings supported by robot
             name = name.trim().toLowerCase();
-            if (name.match("settings?|metadata")) {return "settings"; } 
+            if (name.match("settings?|metadata")) {return "settings"; }
             if (name.match("(test )?cases?"))     {return "test_cases"; }
             if (name.match("(user )?keywords?"))  {return "keywords"; }
             if (name.match("variables?"))         {return "variables"; }
@@ -88,7 +88,7 @@ define(function(require, exports, module) {
         }
 
         function isContinuation(stream, state) {
-            // Return true if the stream is currently in a 
+            // Return true if the stream is currently in a
             // continuation cell
             return (state.column === 1 && stream.current().trim() === "...");
         }
@@ -156,7 +156,7 @@ define(function(require, exports, module) {
                     isVariablesTable: function() {return (this.table_name === "variables"); },
                     isTestCasesTable: function() {return (this.table_name === "test_cases"); },
                     isKeywordsTable: function() {return (this.table_name === "keywords"); },
-                }; 
+                };
             },
 
             token: function(stream, state) {
@@ -181,10 +181,10 @@ define(function(require, exports, module) {
                     return "header";
                 }
 
-                // yipes! pipes! 
+                // yipes! pipes!
                 // don't ever use "cell-separator" for anything
                 // but cell separators. We use this for parsing
-                // tokens in other places in the code. 
+                // tokens in other places in the code.
                 if (isSeparator(stream, state)) {
                     state.column += 1;
                     // this is a custom class (cm-cell-separator)
@@ -195,7 +195,7 @@ define(function(require, exports, module) {
                 var c;
                 if ((c=eatCellContents(stream, state))) {
                     // a table cell; it may be one of several flavors
-                    if (isContinuation(stream, state)) {return "meta"; } 
+                    if (isContinuation(stream, state)) {return "meta"; }
                     if (isLocalSetting(stream, state)) {return "builtin"; }
                     if (isSetting(stream, state))      {return "attribute"; }
                     if (isName(stream, state))         {return "keyword"; }
@@ -223,28 +223,28 @@ define(function(require, exports, module) {
         }
         return num;
     }
-    
+
     function get_current_cell(cm, pos) {
         // this function assumes the "current cell" is a codemirror
         // token. If the current token is a separator, we grab either
-        // the token immediately to the left or right depending on 
-        // where the cursor is. 
+        // the token immediately to the left or right depending on
+        // where the cursor is.
         //
         // If we ever change the tokenize such that more than one
         // token makes up a cell, this logic will have to be revisited.
 
         var token = cm.getTokenAt(pos)
-	var curline = cm.getLine(pos.line);
-	var start;
-	var end;
+        var curline = cm.getLine(pos.line);
+        var start;
+        var end;
 
-	// special case -- we are at the eol, immediate after a cell
-	// separator.
-	if (token.type === "cell-separator" && pos.ch >= curline.length) {
-	    start = {line: pos.line, ch: token.end};
-	    end = start;
-	    return {start: start, end: end, text: ""}
-	}
+        // special case -- we are at the eol, immediate after a cell
+        // separator.
+        if (token.type === "cell-separator" && pos.ch >= curline.length) {
+            start = {line: pos.line, ch: token.end};
+            end = start;
+            return {start: start, end: end, text: ""}
+        }
 
         if (token.type === "cell-separator") {
             if (pos.ch >= token.end-1) {
@@ -256,18 +256,18 @@ define(function(require, exports, module) {
                 // previous token as the start of the cell
                 token = cm.getTokenAt({line: pos.line, ch: token.start-1})
             }
-        } 
+        }
         start = {line: pos.line, ch: token.start}
         end = {line: pos.line, ch: token.end};
         return {start: start, end: end, text: cm.getRange(start, end)};
     }
 
     function rangeFinder(cm, start) {
-        // find ranges that can be folded -- sections (settings, varibles, 
+        // find ranges that can be folded -- sections (settings, varibles,
         // etc), keyword definitions and test case definitions
 
         // FIXME: stop at the last non-blank line of a block rather than the first
-        // line of the next block 
+        // line of the next block
         var startLine = cm.getLine(start.line);
         var endPattern = null;
         var state = cm.getStateAfter(start.line);
@@ -276,14 +276,14 @@ define(function(require, exports, module) {
         var first_cell_pattern = /^\|\s+[^|\s]/i;
 
         if (startLine.match(heading_pattern)) {
-            // Found a heading? Everything up to the next heading or EOF 
+            // Found a heading? Everything up to the next heading or EOF
             // is foldable region
             endPattern = heading_pattern;
 
-        } else if ((state.table_name == "test_cases" || 
+        } else if ((state.table_name == "test_cases" ||
                     state.table_name == "keywords") &&
                    startLine.match(first_cell_pattern)) {
-            // The beginning of a test case or keyword? Fold up to 
+            // The beginning of a test case or keyword? Fold up to
             // the next test case, keyword, or heading (though,
             // we actually go to a line that is _probably_ a heading
             // to keep the pattern short)
@@ -312,11 +312,11 @@ define(function(require, exports, module) {
 
     function on_tab(cm) {
         // maybe-possibly insert a pipe, or move to the next
-        // table cell. 
+        // table cell.
         //
         // blank line  : insert '| '
         // '| '        : replace with '| | ' if in a testcase or keyword
-        // '| | '      : replace with '| | ... | ' 
+        // '| | '      : replace with '| | ... | '
         //
         // if at EOL, and line ends with space-pipe, remove the space-pipe,
         // insert a newline, and match the leading characters of the line
@@ -325,12 +325,12 @@ define(function(require, exports, module) {
         var currentLine = cm.getLine(pos.line);
 
         // attempt to auto-indent; this will return true if it does
-        // something which this block shouldn't mess with. 
+        // something which this block shouldn't mess with.
         if (!auto_indent(cm, pos)) {
             // if we are at the end of the line and we're not
             // preceeded by a separator AND we're not in a table
             // header, insert a separator. Otherwise, trim the trailing
-            // empty cell and move to the next line. 
+            // empty cell and move to the next line.
             var token = cm.getTokenAt(pos);
             if (token.type != "header" && token.type != "comment") {
                 if (pos.ch == currentLine.length) { // cursor at eol
@@ -340,7 +340,7 @@ define(function(require, exports, module) {
                         return;
 
                     } else if (currentLine.match(/ +\|\s*$/)) {
-                        // trailing empty cell; remove it and go to 
+                        // trailing empty cell; remove it and go to
                         // the next line
                         var cursor = cm.getSearchCursor(/(\s+)\|\s*/, pos);
                         var match = cursor.findPrevious();
@@ -374,11 +374,11 @@ define(function(require, exports, module) {
         } else {
             cm.replaceRange("\n", pos);
         }
-        
+
     }
-    
+
     function auto_indent(cm, pos) {
-        // attempt to insert an appropriate number of leading 
+        // attempt to insert an appropriate number of leading
         // pipes on a line
 
         // FIXME: this code may be working too hard; in many cases
@@ -398,14 +398,14 @@ define(function(require, exports, module) {
             if (typeof state != "undefined") {
                 if (state.isTestCasesTable() || state.isKeywordsTable()) {
                     // line begins with "| "; insert another space-pipe-space
-                    cm.replaceRange("| | ", 
-                                    {line: pos.line, ch: 0}, 
+                    cm.replaceRange("| | ",
+                                    {line: pos.line, ch: 0},
                                     {line: pos.line, ch: currentLine.length});
                     return true;
                 } else {
                     // not a testcase or keyword table; insert a continuation line
                     cm.replaceRange("| ... | ",
-                                    {line: pos.line, ch: 0}, 
+                                    {line: pos.line, ch: 0},
                                     {line: pos.line, ch: currentLine.length});
                     return true;
                 }
@@ -415,8 +415,8 @@ define(function(require, exports, module) {
         if (currentLine.match(/^\|\s+\|\s+$/)) {
             if (state.isTestCasesTable() || state.isKeywordsTable()) {
                 // insert a testcase / keyword continuation
-                cm.replaceRange("| | ... | ", 
-                                {line: pos.line, ch: 0}, 
+                cm.replaceRange("| | ... | ",
+                                {line: pos.line, ch: 0},
                                 {line: pos.line, ch: currentLine.length});
                 return true;
             }
@@ -433,7 +433,7 @@ define(function(require, exports, module) {
                 return true;
             }
         }
-        return false; 
+        return false;
     }
 
     function move_to_next_cell(cm, pos) {
@@ -443,13 +443,13 @@ define(function(require, exports, module) {
             cm.setCursor(cursor.to());
         }
     }
-    
+
     function fold_all(cm) {
         var currentLine = null;
         for (var l = cm.firstLine(); l <= cm.lastLine(); ++l) {
             var token = cm.getTokenAt({line:l, ch: 1})
                 currentLine = cm.getLine(l);
-                cm.foldCode({line: l, ch: 0}, null, "fold"); 
+                cm.foldCode({line: l, ch: 0}, null, "fold");
         }
     }
 

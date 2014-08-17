@@ -56,7 +56,7 @@ define(function (require, exports, module) {
         InlineWidget.call(this);
         
         var html = Mustache.render(inlineEditorTemplate, keywordDetails);
-		
+
         this.$wrapperDiv = $(html);
         this.$htmlContent.append(this.$wrapperDiv);
         

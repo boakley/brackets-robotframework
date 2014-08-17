@@ -9,19 +9,19 @@ define(function(require, exports, module) {
     var InlineDocsViewer = require("InlineDocsViewer");
 
     function callRFHub(url, result) {
-	$.ajaxSetup({ "async": false});
+        $.ajaxSetup({ "async": false});
         var result = null;
         var response = $.getJSON(url, function(data) {
-	    StatusBar.updateIndicator("rfhub-error", false)
+            StatusBar.updateIndicator("rfhub-error", false)
             result = data;
 
         }).fail(function(jqxhr, textStatus, error) {
-	    StatusBar.updateIndicator("rfhub-error", true)
+            StatusBar.updateIndicator("rfhub-error", true)
         })
-	$.ajaxSetup({ "async": true});
+        $.ajaxSetup({ "async": true});
         return result
     }
-    
+
     function getKeywordDocs(editor, pos) {
         var keyword = getKeyword(editor, pos);
         var prefs = PreferencesManager.getExtensionPrefs("robotframework");
@@ -43,7 +43,7 @@ define(function(require, exports, module) {
         }
         return null;
     }
-    
+
     function getKeyword(editor, pos) {
         var cm = editor._codeMirror;
         var cell = robot.get_current_cell(cm, pos);
@@ -55,20 +55,20 @@ define(function(require, exports, module) {
     }
 
     function inlineDocsProvider(editor, pos) {
-        
+
         // Only provide docs when cursor is in php ("clike") content
         var langId = editor.getLanguageForSelection().getId();
         if (langId !== "robot") {
             return null;
         }
-        
+
         // Only provide docs if there is no multiline selection
         var sel = editor.getSelection();
         if (sel.start.line !== sel.end.line) {
             return null;
         }
-        
-	// Get the keyword near the cursor
+
+        // Get the keyword near the cursor
         var kw = getKeyword(editor, pos)
 
         var docs = getKeywordDocs(editor, pos);
@@ -84,10 +84,10 @@ define(function(require, exports, module) {
             rfhub_url: "http://localhost:7070/doc/keywords/BuiltIn/Repeat%20Keyword"
         });
 
-	var result = new $.Deferred();
-	inlineWidget.load(editor);
-	result.resolve(inlineWidget);
-	return result.promise();				
+        var result = new $.Deferred();
+        inlineWidget.load(editor);
+        result.resolve(inlineWidget);
+        return result.promise();
     }
 
     exports.inlineDocsProvider = inlineDocsProvider;
