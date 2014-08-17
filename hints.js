@@ -35,9 +35,9 @@ define(function (require, exports, module) {
         var cm = editor._codeMirror;
         var pos = editor.getCursorPos();
         var tmp;
-        var state;
         var cell;
-        var cell_number;
+        var state = cm.getStateAfter(pos.line);
+        var cell_number = robot.get_current_cell_number(cm, pos);
 
         if (implicitChar === "*") {
             // is it a table heading?
@@ -64,14 +64,17 @@ define(function (require, exports, module) {
             if (tmp === "${") {
                 return true;
             }
+
         } else if (implicitChar === "[") {
-            // only provide hints if they are in the first cell
+            // only provide metadata hints if the cursor is in the first cell
             // of a testcase or keyword
-            state = cm.getStateAfter(pos.line);
-            cell_number = robot.get_current_cell_number(cm, pos);
             if ((state.isTestCasesTable() || state.isKeywordsTable()) && cell_number === 1) {
                 return true;
             }
+
+        } else if (state.isSettingsTable() && cell_number === 0) {
+            // first column of a settings table, we always have hints.
+            return true;
         }
 
         if (implicitChar === null) {
