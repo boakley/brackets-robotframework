@@ -83,6 +83,7 @@ define(function (require, exports, module) {
                 var match = stream.match(/^\s*\*+\s*(settings?|metadata|variables?|test( cases?)?|(user )?keywords?)[ *]*$/i);
                 if (match !== null) {
                     state.table_name = canonicalTableName(match[1]);
+                    state.tc_or_kw_name = null;
                     stream.skipToEnd();
                     return true;
                 }
