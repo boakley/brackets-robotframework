@@ -16,7 +16,7 @@ define(function (require, exports, module) {
                 var brace_count;
                 if (stream.match(var_prefix_regex)) {
                     brace_count = 1;
-                    while ((c = stream.next()) !== null) {
+                    while ((c = stream.next()) != null) {
                         if (c === "{") {
                             brace_count += 1;
                         } else if (c === "}") {
