@@ -88,6 +88,17 @@ define(function (require, exports, module) {
         if (docs === null) {
             return false;
         }
+
+        if (docs.args) {
+            // the arguments come back as a json array; deserialize
+            // them and convert to a human-readable list
+            try {
+                docs.args = JSON.parse(docs.args).join(", ");
+            } catch (e) {
+                // do nothing. We'll accept our fate and display
+                // the arguments in their raw format.
+            }
+        }
         
         inlineWidget = new InlineDocsViewer(docs.name, {
             keyword_name: docs.name,
