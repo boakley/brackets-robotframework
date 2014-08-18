@@ -137,7 +137,8 @@ define(function (require, exports, module) {
 
             var hub_url = prefs.get("hub-url");
             var keyword_url = hub_url + "/api/keywords?pattern=^" + cell.text + "*";
-            var keywords = [];
+
+            var keywords = get_local_keywords(this.editor, cell.text);
 
             $.ajaxSetup({ "async": false});
             // We should be able to catch errors via .fail, but
@@ -261,13 +262,32 @@ define(function (require, exports, module) {
         return hints;
     }
 
-    function get_local_keywords(editor) {
-        // not implemented yet...
-        var i;
-        var line;
-        for (i = 0; i < editor.lineCount(); i++) {
-            line = editor.document.getLine(i);
-        }
+    // Return a list of local keywords that start with the given pattern
+    // Performance note: a quick test showed this to take <10 milliseconds
+    // to scan a file of 6000 lines containing 500 keywords. Not too shabby!
+    function get_local_keywords(editor, _pattern) {
+        // this assumes all of the text has been parsed by codemirror. That
+        // may not always be true. I need to figure out how to get codemirror
+        // to tokenize the whole file...
+
+        var cm = editor._codeMirror,
+            line,
+            state,
+            keywords = [],
+            pattern = _pattern.toLowerCase();
+
+        cm.eachLine(function (line) {
+            state = line.stateAfter;
+            if (state && state.isKeywordsTable() && state.tc_or_kw_name) {
+                if (state.tc_or_kw_name.toLowerCase().indexOf(pattern) === 0) {
+                    if (keywords.indexOf(state.tc_or_kw_name) === -1) {
+                        keywords.push(state.tc_or_kw_name);
+                    }
+                }
+            }
+        });
+
+        return keywords;
     }
 
     function make_ordered_set(array) {
