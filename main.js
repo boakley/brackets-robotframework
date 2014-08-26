@@ -21,11 +21,15 @@ define(function (require, exports, module) {
     var PreferencesManager = brackets.getModule("preferences/PreferencesManager");
     var EditorManager   = brackets.getModule("editor/EditorManager");
     var DocumentManager = brackets.getModule("document/DocumentManager");
+    var Menus           = brackets.getModule("command/Menus");
 
-    var robot = require("./robot");
-    var argfile = require("./argfile_mode");
-    var Hints = require("./hints");
-    var inlinedocs = require("./inlinedocs");
+    var robot           = require("./robot");
+    var argfile         = require("./argfile_mode");
+    var Hints           = require("./hints");
+    var inlinedocs      = require("./inlinedocs");
+    var search_keywords = require("./search_keywords");
+
+    var TOGGLE_KEYWORDS_ID  = "bryanoakley.show-robot-keywords";
 
     var prefs = PreferencesManager.getExtensionPrefs("robotframework");
     var _prefs = PreferencesManager.getExtensionPrefs("robotframework");
@@ -63,17 +67,22 @@ define(function (require, exports, module) {
         // we have to call it directly at startup.
         $(DocumentManager).on("currentDocumentChange", initializeUI);
         initializeUI();
+
     });
 
-    // see https://github.com/adobe/brackets/wiki/New-Code-Hinting-API-Proposal
-    CodeHintManager.registerHintProvider(new Hints.HintProvider(), ["robot"], 1);
+    // Create a menu just for this extension. In general, extensions
+    // should avoid such schenanigans, but I need a user-visible place
+    // to hang some features and keyboard shortcuts.
+    var robotMenu = Menus.addMenu("Robot", "robot", Menus.BEFORE, Menus.AppMenuBar.HELP_MENU);
 
-    // register the inline help provider
+    // Initialize the search module. 
+    search_keywords.init(robotMenu);
+
+    CodeHintManager.registerHintProvider(new Hints.HintProvider(), ["robot"], 1);
     EditorManager.registerInlineDocsProvider(inlinedocs.inlineDocsProvider);
 
+    // All the codemirror stuff to make the mode work...
     var cm = brackets.getModule("thirdparty/CodeMirror2/lib/codemirror");
-
-    // new mode for robot argument files
     cm.defineMode("robot_argfile", argfile.argfile_mode);
     cm.defineMIME("text/x-robot-args", "argfile");
     LanguageManager.defineLanguage("robot_argfile", {

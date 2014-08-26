@@ -1,0 +1,20 @@
+<table class="table table-striped row-highlight table-condensed">
+    <thead>
+        <tr>
+            <th class="keyword-name"><a>Keyword</a></th>
+            <th class="keyword-source"><a>Source</a></th>
+            <th class="keyword-synopsis"><a>Synopsis</a></th>
+        </tr>
+    </thead>
+    <tbody>
+        {{#keyList}}
+            {{#filterMatch}}
+                <tr>
+                    <td class="keyword-name"><a href='{{{keywordURL}}}'>{{keywordName}}</a></td>
+                    <td class="keyword-source">{{keywordSource}}</td>
+                    <td class="keyword-synopsis">{{keywordDocumentation}}</td>
+                </tr>
+            {{/filterMatch}}
+        {{/keyList}}
+    </tbody>
+</table>

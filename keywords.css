@@ -1,0 +1,68 @@
+/* All selectors are descendents of #keywords to constrain styles to this extension */
+#keywords .resizable-content {
+    height: 175px;
+    overflow-x: auto;
+    overflow-y: scroll;
+}
+
+#keywords table td {
+    line-height: 14px;
+    padding: 4px 10px;
+}
+
+#keywords .keyword-name { width: 30%; }
+#keywords .keyword-source { width: 10%; }
+#keywords .keyword-synoptis { width: 60%; }
+
+#keywords thead th {
+    position: relative;
+    background-color: #c2c7c7;
+    padding: 0;
+}
+
+#keywords thead th:before {
+    content: '.';
+    position: absolute;
+    top: 50%;
+    right: 5px;
+    width: 0;
+    height: 0;
+    overflow: hidden;
+    margin-top: -3px;
+    border-left: 5px solid transparent;
+    border-right: 5px solid transparent;
+}
+
+#keywords thead th.sort-ascending:before {
+    border-top: 6px solid;
+}
+
+#keywords thead th.sort-descending:before {
+    border-bottom: 6px solid;
+}
+
+#keywords thead a {
+    position: relative;
+    display: block;
+    color: inherit;
+    padding: 4px 10px;
+    text-decoration: none;
+    cursor: pointer;
+    -webkit-transition: background 200ms ease-out;
+}
+
+#keywords thead a:hover {
+    background: rgba(0, 0, 0, 0.08);
+}
+
+#keywords .toolbar {
+    display: block;
+    padding-right: 28px;
+}
+
+#keywords .toolbar .filter {
+    float: right;
+    margin: -2px 10px;
+    padding-top: 2px;
+    padding-bottom: 2px;
+}
