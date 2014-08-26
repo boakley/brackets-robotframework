@@ -39,7 +39,7 @@ define(function (require, exports, module) {
         var keyword = getKeyword(editor, pos);
         var prefs = PreferencesManager.getExtensionPrefs("robotframework");
         var hub_url = prefs.get("hub-url");
-        var url = hub_url + "/api/keywords?pattern=^" + keyword;
+        var url = hub_url + "/api/keywords?pattern=^" + keyword + "$";
 
         var result = null;
         var data = callRFHub(url);
