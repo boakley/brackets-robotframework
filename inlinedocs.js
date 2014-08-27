@@ -32,9 +32,11 @@ define(function (require, exports, module) {
         var cells = robot.get_cell_contents(cm, pos.line);
         var n = robot.get_current_cell_number(cm, pos);
         var docs=null;
+        var kw;
         
         while (n > 0 && docs === null) {
-            docs = getKeywordDocs(editor, cells[n]);
+            kw = cells[n].replace(/^ +| +$/g,'');
+            docs = getKeywordDocs(editor, kw);
             n -= 1;
         }
         return docs;
