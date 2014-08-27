@@ -48,7 +48,6 @@ define(function (require, exports, module) {
             doc_url,
             i;
 
-        $.ajaxSetup({ "async": false});
         var keywords = [];
 
         var response = $.ajax({
