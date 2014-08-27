@@ -516,10 +516,16 @@ define(function (require, exports, module) {
 
     function move_to_next_cell(cm, pos) {
         // move the cursor to the first character in the next cell
-        var cursor = cm.getSearchCursor(/(^|\s+)\|\s+/, pos);
-        if (cursor.findNext()) {
-            cm.setCursor(cursor.to());
-        }
+        var ranges = get_cell_ranges(cm, pos.line);
+        var n = get_current_cell_number(cm, pos);
+        if (n < ranges.length - 1) {
+            console.log("Boo yah!");
+            cm.setCursor(ranges[n+1].start)
+            return;
+        } else {
+            cm.setCursor({line: pos.line+1, ch: 0});
+            return;
+        }                
     }
 
     function fold_all(cm) {
