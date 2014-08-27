@@ -25,21 +25,26 @@ define(function (require, exports, module) {
         return result;
     }
     
-    function getKeyword(editor, pos) {
+    function findKeywordDocs(editor, pos) {
+        // try to find keyword docs, starting at the current cell
+        // and working backwards until we find something. 
         var cm = editor._codeMirror;
-        var cell = robot.get_current_cell(cm, pos);
-        if (cell.text.trim().substring(0, 1) === "#") {
-            // this is a comment, so ignore it
-            return null;
+        var cells = robot.get_cell_contents(cm, pos.line);
+        var n = robot.get_current_cell_number(cm, pos);
+        var docs=null;
+        
+        while (n > 0 && docs === null) {
+            docs = getKeywordDocs(editor, cells[n]);
+            n -= 1;
         }
-        return cell.text;
+        return docs;
     }
 
-    function getKeywordDocs(editor, pos) {
-        var keyword = getKeyword(editor, pos);
+    function getKeywordDocs(editor, kw) {
+        // Get documentation for the given keyword by querying the hub
         var prefs = PreferencesManager.getExtensionPrefs("robotframework");
         var hub_url = prefs.get("hub-url");
-        var url = hub_url + "/api/keywords?pattern=^" + keyword + "$";
+        var url = hub_url + "/api/keywords?pattern=^" + kw + "$";
 
         var result = null;
         var data = callRFHub(url);
@@ -80,11 +85,7 @@ define(function (require, exports, module) {
             return null;
         }
 
-        // Get the keyword near the cursor
-        kw = getKeyword(editor, pos);
-
-        // Get the docs for the keyword
-        docs = getKeywordDocs(editor, pos);
+        var docs = findKeywordDocs(editor, pos);
         if (docs === null) {
             return false;
         }
