@@ -6,6 +6,8 @@
 define(function (require, exports, module) {
     "use strict";
 
+    var EditorManager = brackets.getModule("editor/EditorManager");
+
     function overlay_mode(config, parserConfig) {
         // This defines an overlay mode that matches robot
         // variables (eg: ${...}, %{...}, @{...})
@@ -227,55 +229,35 @@ define(function (require, exports, module) {
         // pipe is zero; if cursor is at the start of
         // the line, return -1
 
-        var token = cm.getTokenAt(pos);
-        var num = -1;
-        var p = {line: pos.line, ch: pos.ch};
-        while (p.ch > 0) {
-            token = cm.getTokenAt(p);
-            if (token.type === "cell-separator") {
-                num += 1;
+        var i,
+            token_center,
+            tokens;
+
+        tokens = get_separator_tokens(cm, pos.line);
+        for (i = 0; i < tokens.length; i++) {
+            // Tokens can be more than one character wide. We'll
+            // compute the center of the token to determine if we're
+            // in the cell to the left or right of the separator.
+            token_center = (tokens[i].start + tokens[i].end)/2
+            if (token_center > pos.ch || i === tokens.length-1) {
+                return i-1;
             }
-            p.ch = token.start;
         }
-        return num;
+        return tokens.length-1;
     }
 
     function get_current_cell(cm, pos) {
-        // this function assumes the "current cell" is a codemirror
-        // token. If the current token is a separator, we grab either
-        // the token immediately to the left or right depending on
-        // where the cursor is.
-        //
-        // If we ever change the tokenize such that more than one
-        // token makes up a cell, this logic will have to be revisited.
+        // return the text of the current cell
+        // FIXME: this is terribly ineffecient. I need to combine the next
+        // three function calls into one. The good news is, this doesn't
+        // need to be very efficient.
+        var cells = get_cell_contents(cm, pos.line);
+        var ranges = get_cell_ranges(cm, pos.line);
+        var n = get_current_cell_number(cm, pos);
 
-        var token = cm.getTokenAt(pos);
-        var curline = cm.getLine(pos.line);
-        var start;
-        var end;
-
-        // special case -- we are at the eol, immediate after a cell
-        // separator.
-        if (token.type === "cell-separator" && pos.ch >= curline.length) {
-            start = {line: pos.line, ch: token.end};
-            end = start;
-            return {start: start, end: end, text: ""};
-        }
-
-        if (token.type === "cell-separator") {
-            if (pos.ch >= token.end - 1) {
-                // we are on the right side of the separator, so
-                // grab the next token as the start of the cell
-                token = cm.getTokenAt({line: pos.line, ch: token.end + 1});
-            } else {
-                // we are on the left of the separator, so grab the
-                // previous token as the start of the cell
-                token = cm.getTokenAt({line: pos.line, ch: token.start - 1});
-            }
-        }
-        start = {line: pos.line, ch: token.start};
-        end = {line: pos.line, ch: token.end};
-        return {start: start, end: end, text: cm.getRange(start, end)};
+        return {text: cells[n], 
+                start: ranges[n].start, 
+                end: ranges[n].end}
     }
 
     function rangeFinder(cm, start) {
@@ -452,6 +434,86 @@ define(function (require, exports, module) {
         return false;
     }
 
+    function get_cell_ranges(cm, line) {
+        var separators,
+            ranges,
+            startToken,
+            endToken,
+            range;
+
+        ranges = [];
+        separators = get_separator_tokens(cm, line);
+        for (var i=0; i < separators.length-1; i++) {
+            startToken = separators[i];
+            endToken = separators[i+1];
+            range = {start: {line: line, ch: startToken.end},
+                     end:   {line: line, ch: endToken.start}};
+            ranges.push(range);
+        }
+
+        return ranges;
+    }
+
+    // Return a list of the contents of all cells on a line
+    function get_cell_contents(cm, line) {
+        var ranges = get_cell_ranges(cm, line);
+        var text,
+            cells;
+
+        cells = [];
+        for (var i=0; i < ranges.length; i++) {
+            text = cm.getRange(ranges[i].start, ranges[i].end);
+            cells.push(text);
+        }
+
+        return cells;
+    }
+
+    // Return a list of separator tokens. The idea being, we
+    // can use this information to move backwards and forwards
+    // through the cells on the given line.
+    //
+    // This will include a null token at the start if the line
+    // doesn't start with a separator token, and a null token
+    // at the end if the line doesn't end with a separator token
+    function get_separator_tokens(cm, line) {
+        var currentLine,
+            separators,
+            token,
+            p,
+            lastSeparator;
+
+        separators = [];
+        currentLine = cm.getLine(line);
+        p = {line: line, ch: 0};
+        while (p.ch < currentLine.length) {
+            token = cm.getTokenAt(p)
+            if (token.type == "cell-separator") {
+                separators.push(token);
+            }
+            p.ch = token.end + 1;
+        }
+
+        if (separators.length > 0) {
+            if (separators[0].start > 0) {
+                // first separator is not the first character on a 
+                // line. This should probably never happen, but we'll
+                // insert a virtual separator at the start.
+                token = {start: 0, end: separators[0].start-1, type: null};
+                separators.unshift(token);
+            }
+
+            lastSeparator = separators[separators.length-1];
+            if (lastSeparator.start < currentLine.length) {
+                // last separator is not at eol; append a pseudo-separator
+                // in the results
+                token = {start: currentLine.length, end: currentLine.length, type: null};
+                separators.push(token);
+            }
+        }
+        return separators;
+    }
+
     function move_to_next_cell(cm, pos) {
         // move the cursor to the first character in the next cell
         var cursor = cm.getSearchCursor(/(^|\s+)\|\s+/, pos);
@@ -473,7 +535,6 @@ define(function (require, exports, module) {
         // Select all of the lines that make up a single statement.
         // It does this by lookup up for the first non-continuation
         // line, and then looking for the next non-continuation line.
-        var EditorManager = brackets.getModule("editor/EditorManager");
         var editor = EditorManager.getCurrentFullEditor()
         var pos = editor.getCursorPos()
         var start = _find_statement_start(editor, pos);
@@ -508,4 +569,5 @@ define(function (require, exports, module) {
     exports.on_tab = on_tab;
     exports.get_current_cell = get_current_cell;
     exports.get_current_cell_number = get_current_cell_number;
+    exports.get_cell_contents = get_cell_contents;
 })
