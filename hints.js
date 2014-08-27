@@ -92,6 +92,10 @@ define(function (require, exports, module) {
         var match = "";
         var hints;
 
+        // replace leading and trailing whitespace
+        cell.text = cell.text.replace(/^ +| +$/g,'');
+
+        // save it; we're gonna need it later.
         this.cell = cell;
 
         if (cell.text.match(/^\s*\[/)) {
@@ -173,14 +177,21 @@ define(function (require, exports, module) {
         // by <i></i>, which needs to be stripped off
         hint = hint.replace(/<i>.*<\/i>/, "");
 
+        var cm = this.editor._codeMirror;
+        var state = cm.getStateAfter(this.cell.start.line);
+        var currentLine = cm.getLine(this.cell.start.line);
+
         // this next piece of magic should probably be configurable
         // by the user - let's auto-add a separator. I think it's
         // the Right Thing to do more often than not.
         if (hint.match(/^\*/)) {
             // a heading
             hint += "\n";
-        } else {
-            hint += " | ";
+        } else if (this.cell.end.ch === currentLine.length) {
+            // ie: nothing follows this cell
+            if (state.separator == "pipes") {
+                hint += " | ";
+            }
         }
         
         this.editor.document.replaceRange(hint, this.cell.start, this.cell.end);
