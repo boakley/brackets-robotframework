@@ -21,14 +21,6 @@ define(function (require, exports, module) {
         keywordsHtml        = require("text!templates/keywords-table.html"),
         keyList = [],
         panel,
-        keymap = [{
-            // What's the right key here? For now I'm picking backslash
-            // simply because it's an unshifted pipe, because pipes. 
-            key: "Ctrl-Alt-\\"
-        }, {
-            key: "Ctrl-Alt-\\",
-            platform: "mac"
-        }],
         $filterField,
         currentFilter;
 
@@ -189,6 +181,10 @@ define(function (require, exports, module) {
         cm.replaceSelection(kwname);
     }
 
+    function toggleKeywordSearch() {
+        _handleShowHideKeywords();
+    }
+
     function _handleShowHideKeywords() {
         if (panel.isVisible()) {
             // free up some memory when we hide the panel
@@ -248,16 +244,11 @@ define(function (require, exports, module) {
 
     }
 
-    function init(robotMenu) {
+    function init() {
         var $keywordsPanel,
             $keywordsContent;
 
         ExtensionUtils.loadStyleSheet(module, "keywords.css");
-
-        CommandManager.register("Search for keywords", TOGGLE_KEYWORDS_ID, _handleShowHideKeywords);
-        if (robotMenu) {
-            robotMenu.addMenuItem(TOGGLE_KEYWORDS_ID, keymap);
-        }
 
         panel = PanelManager.createBottomPanel(TOGGLE_KEYWORDS_ID,
                                                $(Mustache.render(panelHtml, null)),
@@ -276,4 +267,5 @@ define(function (require, exports, module) {
     }
 
     exports.init = init;
+    exports.toggleKeywordSearch = toggleKeywordSearch;
 });

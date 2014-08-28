@@ -12,11 +12,9 @@
 define(function (require, exports, module) {
     'use strict';
   
+    var CommandManager  = brackets.getModule("command/CommandManager");
     var LanguageManager = brackets.getModule("language/LanguageManager");
     var AppInit         = brackets.getModule("utils/AppInit");
-    var ExtensionUtils  = brackets.getModule("utils/ExtensionUtils");
-    var FileSystem      = brackets.getModule("filesystem/FileSystem");
-    var FileUtils       = brackets.getModule("file/FileUtils");
     var CodeHintManager = brackets.getModule("editor/CodeHintManager");
     var PreferencesManager = brackets.getModule("preferences/PreferencesManager");
     var EditorManager   = brackets.getModule("editor/EditorManager");
@@ -25,23 +23,27 @@ define(function (require, exports, module) {
 
     var robot           = require("./robot");
     var argfile         = require("./argfile_mode");
-    var Hints           = require("./hints");
+    var hints           = require("./hints");
     var inlinedocs      = require("./inlinedocs");
     var search_keywords = require("./search_keywords");
 
     var TOGGLE_KEYWORDS_ID  = "bryanoakley.show-robot-keywords";
+    var SELECT_STATEMENT_ID = "bryanoakley.select-statement";
 
-    var prefs = PreferencesManager.getExtensionPrefs("robotframework");
+    var robotMenu;
+
     var _prefs = PreferencesManager.getExtensionPrefs("robotframework");
     _prefs.definePreference("hub-url", "string", "http://localhost:7070");
 
-    // I want pipes to be fairly faint; instead of using a color,
-    // we'll make it really opaque.  This seems to work fairly well,
-    // though I need more real-world testing. Maybe this should be
-    // a preference?
-    var node = document.createElement("style");
-    node.innerHTML = ".cm-cell-separator {opacity: 0.3;}";
-    document.body.appendChild(node);
+    function initializeExtraStyles() {
+        // I want pipes to be fairly faint; instead of using a color,
+        // we'll make it really opaque.  This seems to work fairly well,
+        // though I need more real-world testing. Maybe this should be
+        // a preference?
+        var node = document.createElement("style");
+        node.innerHTML = ".cm-cell-separator {opacity: 0.3;}";
+        document.body.appendChild(node);
+    }
 
     function initializeUI() {
         // do some mode-specific initialization that can only be done after 
@@ -60,9 +62,52 @@ define(function (require, exports, module) {
         }
     }
 
-    AppInit.appReady(function () {
-        var DocumentManager = brackets.getModule("document/DocumentManager");
+    // Create a menu just for this extension. In general, extensions
+    // should avoid such schenanigans, but I need a user-visible place
+    // to hang some features and keyboard shortcuts.
+    function initializeMenu() {
+        robotMenu = Menus.addMenu("Robot", "robot", Menus.BEFORE, Menus.AppMenuBar.HELP_MENU);
 
+        CommandManager.register("Select current statement", SELECT_STATEMENT_ID, 
+                                robot.select_current_statement);
+        robotMenu.addMenuItem(SELECT_STATEMENT_ID, 
+                             [{key: "Ctrl-\\"}, 
+                              {key: "Ctrl-\\", platform: "mac"}]);
+        
+        CommandManager.register("Search for keywords", TOGGLE_KEYWORDS_ID, 
+                                search_keywords.toggleKeywordSearch);
+        robotMenu.addMenuItem(TOGGLE_KEYWORDS_ID, 
+                              [{key: "Ctrl-Alt-\\"}, 
+                               {key: "Ctrl-Alt-\\", platform: "mac" }]);
+    }
+
+    function initializeCodemirror() {
+        // All the codemirror stuff to make the mode work...
+        var cm = brackets.getModule("thirdparty/CodeMirror2/lib/codemirror");
+        cm.defineMode("robot_argfile", argfile.argfile_mode);
+        cm.defineMIME("text/x-robot-args", "argfile");
+        LanguageManager.defineLanguage("robot_argfile", {
+            name: "robot_argfile",
+            mode: "robot_argfile",
+            fileExtensions: ["args"],
+            lineComment: ["#"]
+        });
+
+        // the core robot mode
+        cm.defineMode("robot-variable", robot.overlay_mode);
+        cm.defineMode("robot", robot.base_mode);
+        cm.defineMIME("text/x-robot", "robot");
+        cm.registerHelper("fold", "robot", robot.rangeFinder);
+
+        LanguageManager.defineLanguage("robot", {
+            name: "robot",
+            mode: "robot",
+            fileExtensions: ["robot"],
+            lineComment: ["#"]
+        });
+    }
+    
+    AppInit.appReady(function () {
         // the event is *not* fired for the initial document, so 
         // we have to call it directly at startup.
         $(DocumentManager).on("currentDocumentChange", initializeUI);
@@ -70,39 +115,14 @@ define(function (require, exports, module) {
 
     });
 
-    // Create a menu just for this extension. In general, extensions
-    // should avoid such schenanigans, but I need a user-visible place
-    // to hang some features and keyboard shortcuts.
-    var robotMenu = Menus.addMenu("Robot", "robot", Menus.BEFORE, Menus.AppMenuBar.HELP_MENU);
+    initializeExtraStyles();
+    initializeMenu();
+    initializeCodemirror();
 
-    // Initialize the search module. 
-    search_keywords.init(robotMenu);
+    search_keywords.init();
 
-    CodeHintManager.registerHintProvider(new Hints.HintProvider(), ["robot"], 1);
+    CodeHintManager.registerHintProvider(new hints.HintProvider(), ["robot"], 1);
     EditorManager.registerInlineDocsProvider(inlinedocs.inlineDocsProvider);
 
-    // All the codemirror stuff to make the mode work...
-    var cm = brackets.getModule("thirdparty/CodeMirror2/lib/codemirror");
-    cm.defineMode("robot_argfile", argfile.argfile_mode);
-    cm.defineMIME("text/x-robot-args", "argfile");
-    LanguageManager.defineLanguage("robot_argfile", {
-        name: "robot_argfile",
-        mode: "robot_argfile",
-        fileExtensions: ["args"],
-        lineComment: ["#"]
-    });
-
-    // the core robot mode
-    cm.defineMode("robot-variable", robot.overlay_mode);
-    cm.defineMode("robot", robot.base_mode);
-    cm.defineMIME("text/x-robot", "robot");
-    cm.registerHelper("fold", "robot", robot.rangeFinder);
-
-    LanguageManager.defineLanguage("robot", {
-        name: "robot",
-        mode: "robot",
-        fileExtensions: ["robot"],
-        lineComment: ["#"]
-    });
 
 });
