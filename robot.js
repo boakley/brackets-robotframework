@@ -234,6 +234,9 @@ define(function (require, exports, module) {
             tokens;
 
         tokens = get_separator_tokens(cm, pos.line);
+        if (tokens.length === 0) {
+            return 0
+        }
         for (i = 0; i < tokens.length; i++) {
             // Tokens can be more than one character wide. We'll
             // compute the center of the token to determine if we're
@@ -248,11 +251,23 @@ define(function (require, exports, module) {
 
     function get_current_cell(cm, pos) {
         // return the text of the current cell
-        // FIXME: this is terribly ineffecient. I need to combine the next
-        // three function calls into one. The good news is, this doesn't
-        // need to be very efficient.
-        var cells = get_cell_contents(cm, pos.line);
+        // FIXME: this is terribly ineffecient. both get_cell_contents
+        // and get_cell_current_cell_number also call get_cell_ranges. 
+        // Is memoization a reasonable solution? 
         var ranges = get_cell_ranges(cm, pos.line);
+        var curLine, result;
+
+        if (ranges.length === 0) {
+            curLine = cm.getLine(pos.line);
+            result = {
+                text: curLine,
+                start: {line: pos.line, ch: 0},
+                end: {line: pos.line, ch: curLine.length}
+            }
+            return result;
+        }
+
+        var cells = get_cell_contents(cm, pos.line);
         var n = get_current_cell_number(cm, pos);
 
         return {text: cells[n],
