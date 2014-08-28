@@ -3,7 +3,7 @@
  */
 
 /*jslint vars: true, plusplus: true, devel: true, nomen: true, indent: 4, maxerr: 50 */
-/*global define, brackets, $, Mustache, CodeMirror, _showKeywords */
+/*global define, brackets, $, Mustache, CodeMirror, _showKeywords, _showHubNotice */
 
 define(function (require, exports, module) {
     "use strict";
@@ -139,15 +139,27 @@ define(function (require, exports, module) {
         }
     }
 
+    function _showHubNotice() {
+        var noticeHtml = require("text!templates/rfhub-notice.html");
+        $("#keywords .resizable-content").html(noticeHtml);
+        $("#keywords .toolbar .filter").hide();
+    }
+
     function _showKeywords() {
         var $keywords = $("#keywords");
         
+        if (keyList.length === 0) {
+            return
+        }
+
+        $("#keywords .toolbar .filter").show();
+
         // Apply any active filter
         _filterKeywords(true);
 
         // Add new markup
         $keywords.find(".resizable-content").html(_getKeywordsHtml());
-        $keywords.find("thead th").eq(sortColumn - 1).addClass('sort-' + (sortAscending ? 'ascending' : 'descending'));
+        $keywords.find("thead th").eq(sortColumn).addClass('sort-' + (sortAscending ? 'ascending' : 'descending'));
 
         // Setup header sort buttons
         $("thead .keyword-name a", $keywords).on("click", function () {
@@ -159,6 +171,22 @@ define(function (require, exports, module) {
         $("thead .keyword-synopsis a", $keywords).on("click", function () {
             _changeSorting(sortByDocumentation);
         });
+
+        // set up the paste buttons
+        $keywords.find(".keyword-paste").on("click", function() {
+            var kwname = $(this).parent().find(".keyword-name a").text();
+            _pasteSelectedKeyword(kwname);
+        })
+    }
+
+    function _pasteSelectedKeyword(kwname) {
+        var editor = EditorManager.getCurrentFullEditor();
+        if (!editor) {return; }
+
+        var cm = editor._codeMirror;
+        if (!cm) { return; }
+        
+        cm.replaceSelection(kwname);
     }
 
     function _handleShowHideKeywords() {
@@ -174,10 +202,51 @@ define(function (require, exports, module) {
             CommandManager.get(TOGGLE_KEYWORDS_ID).setChecked(true);
             $filterField.val("").focus();
 
-            if (keyList.length === 0) { keyList = getKeywordList(); }
-            _showKeywords();
+            initializeKeywordList();
         }
         EditorManager.resizeEditor();
+    }
+
+    function initializeKeywordList() {
+        var hub_url = prefs.get("hub-url"),
+            keyword_url = hub_url + "/api/keywords?pattern=*&fields=library,name,synopsis,doc_keyword_url",
+            doc_url,
+            i;
+
+        var keywords = [];
+
+        $("#keywords .toolbar #title").text("Retrieving keyword data...");
+        $("#keywords .toolbar #spinner").attr("class", "spinner spin");
+
+        var response = $.ajax({
+            url: keyword_url,
+            dataType: 'json',
+            async: true,
+            success: function (data) {
+                console.log("Success!");
+                for (i = 0; i < data.keywords.length; i++) {
+                    doc_url = hub_url + data.keywords[i].doc_keyword_url;
+                    keywords.push({keywordSource: data.keywords[i].library,
+                                   keywordName: data.keywords[i].name,
+                                   keywordDocumentation: data.keywords[i].synopsis,
+                                   keywordURL: doc_url,
+                                   filter: data.keywords[i].name.toLowerCase()
+                                  });
+                }
+
+                keyList = keywords;
+                _showKeywords();
+            },
+            error: function (data, status, error) {
+                keyList = null;
+                _showHubNotice();
+            },
+            complete: function (data, status) {
+                $("#keywords .toolbar #title").text("Robot Framework Keywords");
+                $("#keywords .toolbar #spinner").attr("class", "");
+            }
+        });
+
     }
 
     function init(robotMenu) {

@@ -1,7 +1,8 @@
 <table class="table table-striped row-highlight table-condensed">
     <thead>
         <tr>
-            <th class="keyword-name"><a>Keyword</a></th>
+            <th class="keyword-paste"></th>
+            <th class="keyword-name"><a>Keyword Name</a></th>
             <th class="keyword-source"><a>Source</a></th>
             <th class="keyword-synopsis"><a>Synopsis</a></th>
         </tr>
@@ -10,7 +11,9 @@
         {{#keyList}}
             {{#filterMatch}}
                 <tr>
-                    <td class="keyword-name"><a href='{{{keywordURL}}}'>{{keywordName}}</a></td>
+                    <td class="keyword-paste" title="Insert '{{keywordName}}'">&#9998</td>
+                    <td class="keyword-name" title="View documentation in browser">
+                      <a href='{{{keywordURL}}}'>{{keywordName}}</a></td>
                     <td class="keyword-source">{{keywordSource}}</td>
                     <td class="keyword-synopsis">{{keywordDocumentation}}</td>
                 </tr>

@@ -12,7 +12,7 @@
 
 #keywords .keyword-name { width: 30%; }
 #keywords .keyword-source { width: 10%; }
-#keywords .keyword-synoptis { width: 60%; }
+#keywords .keyword-synoptis { width: 55%; }
 
 #keywords thead th {
     position: relative;
@@ -58,6 +58,22 @@
 #keywords .toolbar {
     display: block;
     padding-right: 28px;
+}
+
+#keywords .toolbar #spinner {
+    padding-top: 2px;
+    padding-bottom: 2px;
+}
+
+#keywords #rfhub-notice {
+    padding-left: 20px;
+    padding-top: 2px;
+}
+
+#keywords .toolbar #status {
+    padding-left: 20px;
+    padding-top: 2px;
+    padding-bottom: 2px;
 }
 
 #keywords .toolbar .filter {
