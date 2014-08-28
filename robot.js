@@ -1,6 +1,6 @@
 // robot.js - editing mode for robotframework pipe-separated text format
 
-/*jslint vars: true, plusplus: true, devel: true, nomen: true, indent: 4, maxerr: 50, regexp: true, */
+/*jslint vars: true, plusplus: true, devel: true, nomen: true, indent: 4, maxerr: 50, regexp: true, white: true*/
 /*global define, brackets, $ */
 
 define(function (require, exports, module) {
@@ -13,7 +13,7 @@ define(function (require, exports, module) {
         // variables (eg: ${...}, %{...}, @{...})
         var var_prefix_regex = /[$%@]\{/;
         var overlay = {
-            token: function(stream, state) {
+            token: function (stream, state) {
                 var c;
                 var brace_count;
                 if (stream.match(var_prefix_regex)) {
@@ -175,7 +175,7 @@ define(function (require, exports, module) {
                         state.column = -1;
                     } else {
                         state.column = 0;
-                        state.separator = "spaces"
+                        state.separator = "spaces";
                     }
                 }
 
@@ -238,12 +238,12 @@ define(function (require, exports, module) {
             // Tokens can be more than one character wide. We'll
             // compute the center of the token to determine if we're
             // in the cell to the left or right of the separator.
-            token_center = (tokens[i].start + tokens[i].end)/2
-            if (token_center > pos.ch || i === tokens.length-1) {
-                return i-1;
+            token_center = (tokens[i].start + tokens[i].end) / 2;
+            if (token_center > pos.ch || i === tokens.length - 1) {
+                return i - 1;
             }
         }
-        return tokens.length-1;
+        return tokens.length - 1;
     }
 
     function get_current_cell(cm, pos) {
@@ -255,9 +255,9 @@ define(function (require, exports, module) {
         var ranges = get_cell_ranges(cm, pos.line);
         var n = get_current_cell_number(cm, pos);
 
-        return {text: cells[n], 
-                start: ranges[n].start, 
-                end: ranges[n].end}
+        return {text: cells[n],
+                start: ranges[n].start,
+                end: ranges[n].end};
     }
 
     function rangeFinder(cm, start) {
