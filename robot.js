@@ -519,7 +519,6 @@ define(function (require, exports, module) {
         var ranges = get_cell_ranges(cm, pos.line);
         var n = get_current_cell_number(cm, pos);
         if (n < ranges.length - 1) {
-            console.log("Boo yah!");
             cm.setCursor(ranges[n+1].start)
             return;
         } else {

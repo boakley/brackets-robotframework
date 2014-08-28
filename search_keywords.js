@@ -223,7 +223,6 @@ define(function (require, exports, module) {
             dataType: 'json',
             async: true,
             success: function (data) {
-                console.log("Success!");
                 for (i = 0; i < data.keywords.length; i++) {
                     doc_url = hub_url + data.keywords[i].doc_keyword_url;
                     keywords.push({keywordSource: data.keywords[i].library,
