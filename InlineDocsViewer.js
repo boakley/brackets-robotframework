@@ -40,7 +40,7 @@ define(function (require, exports, module) {
         Strings             = brackets.getModule("strings");
     
     // Load template
-    var inlineEditorTemplate = require("text!InlineDocsViewer.html");
+    var inlineEditorTemplate = require("text!templates/InlineDocsViewer.html");
     
     // Lines height for scrolling
     var SCROLL_LINE_HEIGHT = 40;
