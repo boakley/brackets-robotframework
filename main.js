@@ -26,6 +26,7 @@ define(function (require, exports, module) {
     var hints           = require("./hints");
     var inlinedocs      = require("./inlinedocs");
     var search_keywords = require("./search_keywords");
+    var rangefinder     = require("./rangefinder");
 
     var TOGGLE_KEYWORDS_ID  = "bryanoakley.show-robot-keywords";
     var SELECT_STATEMENT_ID = "bryanoakley.select-statement";
@@ -97,7 +98,7 @@ define(function (require, exports, module) {
         cm.defineMode("robot-variable", robot.overlay_mode);
         cm.defineMode("robot", robot.base_mode);
         cm.defineMIME("text/x-robot", "robot");
-        cm.registerHelper("fold", "robot", robot.rangeFinder);
+        cm.registerHelper("fold", "robot", rangefinder.rangeFinder);
 
         LanguageManager.defineLanguage("robot", {
             name: "robot",
