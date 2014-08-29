@@ -17,7 +17,7 @@ define(function (require, exports, module) {
 
     var prefs = PreferencesManager.getExtensionPrefs("robotframework");
 
-    var panelHtml           = require("text!templates/bottom-panel.html"),
+    var panelHtml           = require("text!templates/keyword-search-panel.html"),
         keywordsHtml        = require("text!templates/keywords-table.html"),
         keyList = [],
         panel,
