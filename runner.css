@@ -1,0 +1,35 @@
+#robot-runner-panel .resizable-content {
+    border: none;
+    margin:0;
+    padding: 0;
+    height: 140px;
+    overflow-x: auto;
+    overflow-y: scroll;
+    font-family: monospace;
+    white-space: pre;
+    margin-left: 20px;
+}
+
+#robot-runner-panel .toolbar {
+    display: block;
+}
+
+#robot-runner-panel .toolbar #spinner {
+    padding-top: 2px;
+    padding-bottom: 2px;
+}
+
+#robot-runner-panel .toolbar .close {
+    position: absolute;
+    top: .75em;
+    right: .5em;
+}
+
+#robot-runner-panel .toolbar .command {
+    width: 90%;
+    margin: 2px 2px;
+    padding-top: 2px;
+    padding-bottom: 2px;
+}
+
+

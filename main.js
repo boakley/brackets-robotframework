@@ -1,8 +1,4 @@
 /* 
-   hints.js - provide hints for robotframework text files
-
-   This depends on a web service to provide the hinting information.
-   This module will use an url like "http://<service>/api/keywords?pattern
 */
 
 /*jslint vars: true, plusplus: true, devel: true, nomen: true, indent: 4, maxerr: 50, regexp: true */
@@ -26,15 +22,19 @@ define(function (require, exports, module) {
     var hints           = require("./hints");
     var inlinedocs      = require("./inlinedocs");
     var search_keywords = require("./search_keywords");
+    var runner          = require("./runner");
     var rangefinder     = require("./rangefinder");
 
     var TOGGLE_KEYWORDS_ID  = "bryanoakley.show-robot-keywords";
+    var TOGGLE_RUNNER_ID    = "bryanoakley.show-robot-runner";
     var SELECT_STATEMENT_ID = "bryanoakley.select-statement";
+    var RUN_ID              = "bryanoakley.run";
 
     var robotMenu;
 
     var _prefs = PreferencesManager.getExtensionPrefs("robotframework");
     _prefs.definePreference("hub-url", "string", "http://localhost:7070");
+    _prefs.definePreference("run-command", "string", "python -m robot.run %SUITE")
 
     function initializeExtraStyles() {
         // I want pipes to be fairly faint; instead of using a color,
@@ -71,15 +71,29 @@ define(function (require, exports, module) {
 
         CommandManager.register("Select current statement", SELECT_STATEMENT_ID, 
                                 robot.select_current_statement);
+        CommandManager.register("Show keyword search window", TOGGLE_KEYWORDS_ID, 
+                                search_keywords.toggleKeywordSearch);
+        CommandManager.register("Show runner window", TOGGLE_RUNNER_ID, 
+                                runner.toggleRunner);
+        CommandManager.register("Run test suite", RUN_ID,
+                                runner.runSuite)
         robotMenu.addMenuItem(SELECT_STATEMENT_ID, 
                              [{key: "Ctrl-\\"}, 
                               {key: "Ctrl-\\", platform: "mac"}]);
         
-        CommandManager.register("Search for keywords", TOGGLE_KEYWORDS_ID, 
-                                search_keywords.toggleKeywordSearch);
+        robotMenu.addMenuDivider();
+
+        robotMenu.addMenuItem(RUN_ID,
+                              [{key: "Ctrl-Shift-B"},
+                               {key: "Ctrl-Shift-B", platform: "mac"},
+                              ]);
+
+        robotMenu.addMenuDivider();
+
         robotMenu.addMenuItem(TOGGLE_KEYWORDS_ID, 
                               [{key: "Ctrl-Alt-\\"}, 
                                {key: "Ctrl-Alt-\\", platform: "mac" }]);
+        robotMenu.addMenuItem(TOGGLE_RUNNER_ID);
     }
 
     function initializeCodemirror() {
@@ -121,6 +135,7 @@ define(function (require, exports, module) {
     initializeCodemirror();
 
     search_keywords.init();
+    runner.init();
 
     CodeHintManager.registerHintProvider(new hints.HintProvider(), ["robot"], 1);
     EditorManager.registerInlineDocsProvider(inlinedocs.inlineDocsProvider);
