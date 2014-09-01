@@ -3,7 +3,7 @@
     "title": "Robot framework plain text editing mode",
     "description": "Editing mode for Robotframework pipe-delimited plain text files, providing syntax highlighting, code folding, auto-completion (requires robotframework-hub - https://github.com/boakley/robotframework-hub) and more.",
     "homepage": "https://github.com/boakley/brackets-robotframework/wiki",
-    "version": "0.9.7",
+    "version": "0.9.8",
     "author": "Bryan Oakley <bryan.oakley@gmail.com>",
     "license": "MIT",
     "engines": {
