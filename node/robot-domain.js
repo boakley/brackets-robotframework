@@ -49,11 +49,11 @@ maxerr: 50, node: true */
 
         child = spawn(argv[0], argv.slice(1), opts);
 
-        child.stderr.on('data', function(data) {
-            _domainManager.emitEvent("robot", "stderr", {data: String(data)});
-        });
         child.stdout.on('data', function(data) {
             _domainManager.emitEvent("robot", "stdout", {data: String(data)});
+        });
+        child.stderr.on('data', function(data) {
+            _domainManager.emitEvent("robot", "stderr", {data: String(data)});
         });
         child.on('exit', function(code) {
             _domainManager.emitEvent("robot","exit", {statuscode: code});
