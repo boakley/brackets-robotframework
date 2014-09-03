@@ -1,14 +1,12 @@
 #robot-runner-panel .resizable-content {
     border: none;
+    margin: 0;
+    margin-left: 1em;
     height: 140px;
     overflow-x: auto;
     overflow-y: scroll;
     font-family: Consolas,Monaco,Lucida Console,DejaVu Sans Mono,Bitstream Vera Sans Mono,Courier New,monospace;
     white-space: pre;
-    margin-left: 0px;
-    padding: 10px;
-    color: #000;
-    background-color: #fff;
 }
 
 #robot-runner-panel .resizable-content .status-fail {
