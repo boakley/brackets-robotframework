@@ -115,7 +115,7 @@ define(function (require, exports, module) {
         cm.registerHelper("fold", "robot", rangefinder.rangeFinder);
 
         LanguageManager.defineLanguage("robot", {
-            name: "robot",
+            name: "Robot",
             mode: "robot",
             fileExtensions: ["robot"],
             lineComment: ["#"]
