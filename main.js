@@ -84,8 +84,8 @@ define(function (require, exports, module) {
         robotMenu.addMenuDivider();
 
         robotMenu.addMenuItem(RUN_ID,
-                              [{key: "Ctrl-Shift-B"},
-                               {key: "Ctrl-Shift-B", platform: "mac"},
+                              [{key: "Ctrl-R"},
+                               {key: "Ctrl-R", platform: "mac"},
                               ]);
 
         robotMenu.addMenuDivider();
@@ -93,7 +93,10 @@ define(function (require, exports, module) {
         robotMenu.addMenuItem(TOGGLE_KEYWORDS_ID, 
                               [{key: "Ctrl-Alt-\\"}, 
                                {key: "Ctrl-Alt-\\", platform: "mac" }]);
-        robotMenu.addMenuItem(TOGGLE_RUNNER_ID);
+        robotMenu.addMenuItem(TOGGLE_RUNNER_ID,
+                              [{key: "Alt-R"},
+                               {key: "Alt-R", platform: "mac"},
+                              ]);
     }
 
     function initializeCodemirror() {
