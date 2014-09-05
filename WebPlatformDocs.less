@@ -1,19 +1,9 @@
-/* Colors */
-@body-text-color: #666;
-@emphasized-text-color: #454545;
-@heading-color: #454545;
-@link-color: #0083e8;
-
-
 /* Typography */
  @font-weight-semibold: 500;
-
 
 /* Overall inline widget content container */
 .keyword-defn {
     margin-left: 20px;
-    
-    color: @body-text-color;
     
     /* Enable text selection */
     cursor: auto;
@@ -32,7 +22,6 @@
     font-size: 14px;
     
     h1 {
-        color: @heading-color;
         font-size: 16px;
         font-weight: @font-weight-semibold;
         line-height: normal;
@@ -40,21 +29,15 @@
     }
 
     h2 {
-        color: @heading-color;
         font-size: 14px;
         font-weight: @font-weight-semibold;
         line-height: normal;
         margin: 15px 0 9px 0;
     }
     
-    a {
-        color: @link-color;
-    }
-    
     code {
         font-family: SourceCodePro;
         font-size: 12px;
-        color: @emphasized-text-color;
         background: none;   // revert Bootstrap styling
         padding: 0;
         white-space: normal;
@@ -105,7 +88,6 @@
         margin-top: 0px;
         
         dt {
-            color: @emphasized-text-color;
             font-size: 13px;
             font-weight: @font-weight-semibold;
             margin-bottom: 3px;
@@ -168,7 +150,6 @@ a.more-info {
     
     font-size: 12px;
     font-weight: @font-weight-semibold;
-    color: @heading-color;
     text-shadow: 0 1px 0 white;
     &:hover {
         background-color: #edf1f1;
@@ -196,7 +177,6 @@ a.license-info {
     
     font-size: 12px;
     font-weight: @font-weight-semibold;
-    color: @heading-color;
     text-shadow: 0 1px 0 white;
     &:hover {
         background-color: #edf1f1;
