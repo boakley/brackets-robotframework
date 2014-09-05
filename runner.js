@@ -93,14 +93,20 @@ define(function (require, exports, module) {
     }
 
     // Show the runner panel if hidden, or hide if shown
-    function toggleRunner(show) {
+    function toggleRunner(stealFocus) {
         if (panel.isVisible()) {
             panel.hide();
             CommandManager.get(TOGGLE_RUNNER_ID).setChecked(false);
             EditorManager.focusEditor();
+
         } else {
+            stealFocus = typeof(stealFocus) === 'undefined' ? true : false;
+
             CommandManager.get(TOGGLE_RUNNER_ID).setChecked(true);
             panel.show();
+            if (stealFocus) {
+                $commandField.focus();
+            }
         }
         EditorManager.resizeEditor();
     }
@@ -118,7 +124,7 @@ define(function (require, exports, module) {
     // Do the actual work of running the command
     function runSuite() {
         if (!panel.isVisible()) {
-            toggleRunner()
+            toggleRunner(false);
         }
         var current_suite = _getCurrentSuite();
         var command = $commandField.val();
