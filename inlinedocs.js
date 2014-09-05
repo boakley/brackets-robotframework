@@ -97,12 +97,18 @@ define(function (require, exports, module) {
             // them and convert to a human-readable list
             try {
                 docs.args = JSON.parse(docs.args).join(", ");
+                if (docs.args == "") {
+                    docs.args = "<i>none</i>"
+                }
             } catch (e) {
                 // do nothing. We'll accept our fate and display
                 // the arguments in their raw format.
             }
+        } else {
+            docs.args = "<i>none</i>"
         }
         
+        console.log("docs:", docs);
         inlineWidget = new InlineDocsViewer(docs.name, {
             keyword_name: docs.name,
             keyword_doc: docs.htmldoc,
