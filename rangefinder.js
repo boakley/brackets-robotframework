@@ -13,17 +13,22 @@ define(function (require, exports, module) {
         // FIXME: stop at the last non-blank line of a block rather than the first
         // line of the next block
         var startLine = cm.getLine(start.line);
+        var lastLine;
+        var curLine;
         var endPattern = null;
         var state = cm.getStateAfter(start.line);
         var pos;
         var first_cell_pattern = /^\|\s+[^|\s]/i;
+        var result;
+        var i;
+        var end;
 
         if (startLine.match(heading_pattern)) {
             // Found a heading? Everything up to the next heading or EOF
             // is foldable region
             endPattern = heading_pattern;
             pos = _find_end_of_section(cm, start.line);
-            var result = {
+            result = {
                 from: {line: start.line, ch: startLine.length},
                 to: pos};
             return result;
@@ -43,10 +48,11 @@ define(function (require, exports, module) {
             return false;
         }
 
-        for (var i = start.line + 1, end = cm.lineCount(); i < end; ++i) {
-            var curLine = cm.getLine(i);
+        // scan the following lines looking for the end pattern
+        for (i = start.line + 1, end = cm.lineCount(); i < end; ++i) {
+            curLine = cm.getLine(i);
             if (curLine.match(endPattern)) {
-                var result={
+                result={
                     from: {line: start.line, ch: startLine.length},
                     to: {line: i-1, ch: curLine.length}
                 };
@@ -54,8 +60,9 @@ define(function (require, exports, module) {
             };
         };
         // if we fell through the loop, fold to the end of the file
+        lastLine = cm.getLine(cm.lineCount()-1)
         return {from: {line: start.line, ch: startLine.length},
-                to: {line: i, ch: curLine.length}}
+                to: {line: cm.lineCount(), ch: lastLine.length}}
     }
 
     function _find_end_of_section(cm, linenumber) {
