@@ -37,6 +37,8 @@ define(function (require, exports, module) {
         var tmp;
         var cell;
         var state = cm.getStateAfter(pos.line);
+        // FIXME? do I need to compute cell_number when I already
+        // have state.column?
         var cell_number = robot.get_current_cell_number(cm, pos);
 
         if (implicitChar === "*") {
@@ -72,8 +74,12 @@ define(function (require, exports, module) {
                 return true;
             }
 
-        } else if (state.isSettingsTable() && cell_number === 0) {
+        } else if (state.isSettingsTable() && cell_number === 0 && pos.ch !== 0) {
             // first column of a settings table, we always have hints.
+            // Note that if the user prefers space-separated format we want
+            // to NOT do that check on pos.ch; When I get around to finishing
+            // support for space-separated format I can check for a setting
+            // or something....
             return true;
         }
 
