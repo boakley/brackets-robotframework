@@ -19,7 +19,9 @@ define(function (require, exports, module) {
     var panelHTML = require('text!templates/runner-panel.html');
     var panel;
     var prefs;
-    var $commandField;
+    var $commandField,
+        $actionButton;
+    var actionCallback = null;
 
     var $panel = $("#robot-runner-panel");
 
@@ -40,16 +42,18 @@ define(function (require, exports, module) {
         $runnerPanel = $("#robot-runner-panel");
         $runnerContent = $runnerPanel.find(".resizable-content");
         $commandField = $runnerPanel.find(".toolbar .command");
+        $actionButton = $runnerPanel.find(".toolbar #action_button");
 
+        _setAction(runSuite);
         $commandField.val(default_command);
 
         $runnerPanel.find(".close").click(function () {
             CommandManager.execute(TOGGLE_RUNNER_ID);
         });
 
-        $runnerPanel.find(".run").click(function() {
-            runSuite();
-        });
+        $actionButton.click(function() {
+            actionCallback();
+        })
 
         $runnerPanel.find(".command").keypress(function(event) {
             if (event.keyCode === 13) {
@@ -86,9 +90,9 @@ define(function (require, exports, module) {
             $runnerContent.scrollTop($runnerContent.prop("scrollHeight"));
         });
 
-//        $(robotDomain).on("exit", function(e, data) {
-//            // need to set some sort of status flag or icon or whatnot
-//        });
+        $(robotDomain).on("exit", function(e, data) {
+            _setAction(runSuite);
+        });
 
     }
 
@@ -121,13 +125,32 @@ define(function (require, exports, module) {
         return suite
     }
 
+    function stopSuite() {
+        robotDomain.exec("stop");
+        _setAction(runSuite)
+    }
+
+    function _setAction(callback) {
+        actionCallback = callback;
+        if (callback === runSuite) {
+            $actionButton.text("Run");
+            $actionButton.attr("title", "Run the command");
+        } else {
+            $actionButton.text("Stop");
+            $actionButton.attr("title", "Stop the command");
+        }
+    }
+
     // Do the actual work of running the command
     function runSuite() {
         if (!panel.isVisible()) {
             toggleRunner(false);
         }
+        _setAction(stopSuite)
+
         var current_suite = _getCurrentSuite();
         var command = $commandField.val();
+        var label = "Run";
         prefs.set("run-command", command);
         prefs.save();
 
@@ -139,16 +162,11 @@ define(function (require, exports, module) {
 
         $("#robot-runner-panel").find(".resizable-content").html("");
 
-        robotDomain.exec("runSuite", projectRoot.fullPath, command)
-        .done(function(s) {
-            console.log("[brackets-robot-node] runSuite: %s", s);
-        }).fail(function(err) {
-            console.error("[brackets-robot-node] runSuite failed", err);
-        });
-
+        robotDomain.exec("start", projectRoot.fullPath, command);
     }
 
     exports.init = init;
     exports.runSuite = runSuite;
+    exports.stopSuite = stopSuite;
     exports.toggleRunner = toggleRunner;
 });

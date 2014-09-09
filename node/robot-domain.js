@@ -38,10 +38,14 @@ maxerr: 50, node: true */
     var _domainManager;
     var child;
         
-    function cmdRunSuite(folder, command) {
+    function cmdStop() {
+        child.kill('SIGINT');
+    }
+
+    function cmdStart(cwd, command) {
 
         var argv = parse(command);
-        var opts = {cwd: folder};
+        var opts = {cwd: cwd};
 
         if (argv.length === 0) {
             return false;
@@ -75,9 +79,9 @@ maxerr: 50, node: true */
 
         domainManager.registerCommand(
             "robot",        // domain name
-            "runSuite",     // command name
-            cmdRunSuite,    // command handler function
-            true,          // this command is synchronous in Node
+            "start",        // command name
+            cmdStart,       // command handler function
+            true,           // this command is synchronous in Node
             "Runs a robot framework test suite",
             [{name: "folder",
               type: "string",
@@ -92,6 +96,18 @@ maxerr: 50, node: true */
               description: "random string"}]
         );
 
+        domainManager.registerCommand(
+            "robot",
+            "stop",
+            cmdStop,
+            true,
+            "Sends SIGINT to the running process",
+            [], // parameters,
+            [{name: "result",
+              type: "string",
+              description: "whatever"}]
+        );
+
         domainManager.registerEvent(
             "robot",
             "exit",
@@ -101,6 +117,7 @@ maxerr: 50, node: true */
                 description: "the status code"
             }]
         );
+        domainManager.registerEvent("robot","kill");
         domainManager.registerEvent(
             "robot",
             "stdout",

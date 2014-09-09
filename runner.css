@@ -36,9 +36,14 @@
     right: .5em;
 }
 
+#robot-runner-panel .toolbar #action_button {
+    width: 4em;
+    margin: 2px;
+}
+
 #robot-runner-panel .toolbar .command {
     width: 90%;
-    margin: 2px 2px;
+    margin: 1px;
     padding-top: 2px;
     padding-bottom: 2px;
 }
