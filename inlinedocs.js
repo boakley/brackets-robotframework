@@ -108,7 +108,6 @@ define(function (require, exports, module) {
             docs.args = "<i>none</i>"
         }
         
-        console.log("docs:", docs);
         inlineWidget = new InlineDocsViewer(docs.name, {
             keyword_name: docs.name,
             keyword_doc: docs.htmldoc,
