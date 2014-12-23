@@ -265,9 +265,15 @@ define(function (require, exports, module) {
         return hints.sort();
     }
 
+    function escape_regex_chars(str) {
+        // escape characters special to regex; eg * becomes \*
+        return (str+'').replace(/[.?*+^$[\]\\(){}|-]/g, "\\$&");
+    }
+
     function get_heading_hints(prefix) {
         // Return all possible table headings matching the prefix
-        var pattern = new RegExp("^" + prefix, 'i');
+
+        var pattern = new RegExp("^" + escape_regex_chars(prefix), 'i');
         var tables = ["Keywords", "Settings", "Test Cases", "Variables"];
         var hints = [];
         var i;
