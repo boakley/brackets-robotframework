@@ -14,7 +14,8 @@ define(function (require, exports, module) {
     var CodeHintManager = brackets.getModule("editor/CodeHintManager");
     var PreferencesManager = brackets.getModule("preferences/PreferencesManager");
     var EditorManager   = brackets.getModule("editor/EditorManager");
-    var DocumentManager = brackets.getModule("document/DocumentManager");
+    var MainViewManager = brackets.getModule("view/MainViewManager");
+
     var Menus           = brackets.getModule("command/Menus");
 
     var robot           = require("./robot");
@@ -126,10 +127,12 @@ define(function (require, exports, module) {
     }
     
     AppInit.appReady(function () {
+        $(MainViewManager).on("currentFileChange", initializeUI);
         // the event is *not* fired for the initial document, so 
         // we have to call it directly at startup.
-        $(DocumentManager).on("currentDocumentChange", initializeUI);
-        initializeUI();
+        // N.B. this used to be true prior to brackets 1.0; maybe
+        // it's not true now? I need to do more testing...
+//        initializeUI();
 
     });
 

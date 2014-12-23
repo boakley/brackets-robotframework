@@ -8,7 +8,7 @@ define(function (require, exports, module) {
     var PreferencesManager  = brackets.getModule("preferences/PreferencesManager");
     var NodeDomain          = brackets.getModule("utils/NodeDomain");
     var ExtensionUtils      = brackets.getModule("utils/ExtensionUtils");
-    var PanelManager        = brackets.getModule("view/PanelManager");
+    var WorkspaceManager    = brackets.getModule('view/WorkspaceManager');
     var EditorManager       = brackets.getModule("editor/EditorManager");
     var PanelManager        = brackets.getModule("view/PanelManager");
     var ProjectManager      = brackets.getModule("project/ProjectManager");
@@ -34,7 +34,7 @@ define(function (require, exports, module) {
 
         ExtensionUtils.loadStyleSheet(module, "runner.css");
 
-        panel = PanelManager.createBottomPanel("robot-runner-panel", $(panelHTML), 100);
+        panel = WorkspaceManager.createBottomPanel("robot-runner-panel", $(panelHTML), 100);
         panel.hide();
 
         var $runnerPanel, $runnerContent;

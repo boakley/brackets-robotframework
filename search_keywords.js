@@ -13,7 +13,7 @@ define(function (require, exports, module) {
         EditorManager       = brackets.getModule("editor/EditorManager"),
         ExtensionUtils      = brackets.getModule("utils/ExtensionUtils"),
         Menus               = brackets.getModule("command/Menus"),
-        PanelManager        = brackets.getModule("view/PanelManager");
+        WorkspaceManager    = brackets.getModule('view/WorkspaceManager');
 
     var prefs = PreferencesManager.getExtensionPrefs("robotframework");
 
@@ -250,9 +250,9 @@ define(function (require, exports, module) {
 
         ExtensionUtils.loadStyleSheet(module, "keywords.css");
 
-        panel = PanelManager.createBottomPanel(TOGGLE_KEYWORDS_ID,
-                                               $(Mustache.render(panelHtml, null)),
-                                               100);
+        panel = WorkspaceManager.createBottomPanel(TOGGLE_KEYWORDS_ID,
+                                                   $(Mustache.render(panelHtml, null)),
+                                                   100);
         panel.hide();
 
         $keywordsPanel = $("#keywords");
