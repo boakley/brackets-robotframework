@@ -13,6 +13,7 @@ define(function (require, exports, module) {
     var PanelManager        = brackets.getModule("view/PanelManager");
     var ProjectManager      = brackets.getModule("project/ProjectManager");
     var DocumentManager     = brackets.getModule("document/DocumentManager");
+    var MainViewManager     = brackets.getModule("view/MainViewManager");
 
     var robotDomain = new NodeDomain("robot", ExtensionUtils.getModulePath(module, "node/robot-domain"));
     // stolen from Brackets Builder
@@ -101,7 +102,7 @@ define(function (require, exports, module) {
         if (panel.isVisible()) {
             panel.hide();
             CommandManager.get(TOGGLE_RUNNER_ID).setChecked(false);
-            EditorManager.focusEditor();
+            MainViewManager.focusActivePane();
 
         } else {
             stealFocus = typeof(stealFocus) === 'undefined' ? true : false;
@@ -112,7 +113,7 @@ define(function (require, exports, module) {
                 $commandField.focus();
             }
         }
-        EditorManager.resizeEditor();
+        WorkspaceManager.recomputeLayout();
     }
 
     function _getCurrentSuite() {
