@@ -115,16 +115,20 @@ define(function (require, exports, module) {
             // FIXME: either remove the current cell from the list,
             // or make it the first item in the list
             var matches = get_valid_variables(this.editor, pos);
-            matches = matches.filter(function (item, index, inputArray) {
-                // filter the list by only using matches that contain
-                // the current cell text (minus the ${ and })
-                var itemname = item.replace(/^\$\{|\}$/g, "");
-                var match = cell.text.replace(/^\$\{|\}$/g, "");
-                var result = (itemname.toLowerCase().indexOf(match.toLowerCase()) === 0);
-                return result;
-            });
-            hints = make_ordered_set(matches);
-            return {hints: hints, match: match, selectInitial: true};
+            if (matches !== null) {
+                matches = matches.filter(function (item, index, inputArray) {
+                    // filter the list by only using matches that contain
+                    // the current cell text (minus the ${ and })
+                    var itemname = item.replace(/^\$\{|\}$/g, "");
+                    var match = cell.text.replace(/^\$\{|\}$/g, "");
+                    var result = (itemname.toLowerCase().indexOf(match.toLowerCase()) === 0);
+                    return result;
+                });
+                hints = make_ordered_set(matches);
+                return {hints: hints, match: match, selectInitial: true};
+            } else {
+                return {hints: [], match: "", selectInitial: true};
+            }
 
         } else if (cell.text.match(/\*+/) && cell.start.ch === 0) {
             // table headings
