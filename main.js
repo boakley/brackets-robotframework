@@ -17,6 +17,7 @@ define(function (require, exports, module) {
     var MainViewManager = brackets.getModule("view/MainViewManager");
 
     var Menus           = brackets.getModule("command/Menus");
+    var CodeInspection  = brackets.getModule("language/CodeInspection");
 
     var robot           = require("./robot");
     var argfile         = require("./argfile_mode");
@@ -24,6 +25,7 @@ define(function (require, exports, module) {
     var inlinedocs      = require("./inlinedocs");
     var search_keywords = require("./search_keywords");
     var runner          = require("./runner");
+    var linter          = require("./lint");
     var rangefinder     = require("./rangefinder");
 
     var TOGGLE_KEYWORDS_ID  = "bryanoakley.show-robot-keywords";
@@ -35,7 +37,8 @@ define(function (require, exports, module) {
 
     var _prefs = PreferencesManager.getExtensionPrefs("robotframework");
     _prefs.definePreference("hub-url", "string", "http://localhost:7070");
-    _prefs.definePreference("run-command", "string", "python -m robot.run %SUITE")
+    _prefs.definePreference("run-command", "string", "python -m robot.run %SUITE");
+    _prefs.definePreference("rflint-command", "string", "/usr/local/bin/rflint");
 
     function initializeExtraStyles() {
         // I want pipes to be fairly faint; instead of using a color,
@@ -142,9 +145,13 @@ define(function (require, exports, module) {
 
     search_keywords.init();
     runner.init();
+    linter.init();
 
     CodeHintManager.registerHintProvider(new hints.HintProvider(), ["robot"], 1);
     EditorManager.registerInlineDocsProvider(inlinedocs.inlineDocsProvider);
-
+    CodeInspection.register("robot", {
+        name: "robotframework-lint",
+        scanFileAsync: linter.handleLintRequest
+    });
 
 });
