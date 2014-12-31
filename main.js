@@ -27,18 +27,20 @@ define(function (require, exports, module) {
     var runner          = require("./runner");
     var linter          = require("./lint");
     var rangefinder     = require("./rangefinder");
+    var settings_dialog = require("./settings_dialog");
 
     var TOGGLE_KEYWORDS_ID  = "bryanoakley.show-robot-keywords";
     var TOGGLE_RUNNER_ID    = "bryanoakley.show-robot-runner";
     var SELECT_STATEMENT_ID = "bryanoakley.select-statement";
+    var EDIT_SETTINGS_ID    = "bryanoakley.edit-robot-preferences";
     var RUN_ID              = "bryanoakley.run";
 
     var robotMenu;
 
     var _prefs = PreferencesManager.getExtensionPrefs("robotframework");
     _prefs.definePreference("hub-url", "string", "http://localhost:7070");
-    _prefs.definePreference("run-command", "string", "python -m robot.run %SUITE");
-    _prefs.definePreference("rflint-command", "string", "/usr/local/bin/rflint");
+    _prefs.definePreference("run-command", "string", "pybot --suite %SUITE tests");
+    _prefs.definePreference("rflint-command", "string", "rflint");
 
     function initializeExtraStyles() {
         // I want pipes to be fairly faint; instead of using a color,
@@ -81,6 +83,8 @@ define(function (require, exports, module) {
                                 runner.toggleRunner);
         CommandManager.register("Run test suite", RUN_ID,
                                 runner.runSuite)
+        CommandManager.register("Robot Settings ...", EDIT_SETTINGS_ID,
+                                settings_dialog.showSettingsDialog);
         robotMenu.addMenuItem(SELECT_STATEMENT_ID, 
                              [{key: "Ctrl-\\"}, 
                               {key: "Ctrl-\\", platform: "mac"}]);
@@ -101,6 +105,10 @@ define(function (require, exports, module) {
                               [{key: "Alt-R"},
                                {key: "Alt-R", platform: "mac"},
                               ]);
+
+        robotMenu.addMenuDivider();
+        robotMenu.addMenuItem(EDIT_SETTINGS_ID);
+
     }
 
     function initializeCodemirror() {

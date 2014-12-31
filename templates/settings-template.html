@@ -1,0 +1,35 @@
+<div id="robot-framework-settings-dialog" class="modal">
+  <div class="modal-header">
+    <h1 class="dialog-title">Robot Framework Settings</h1>
+  </div>
+
+  <div class="modal-body">
+    <form>
+      <div class="form-group">
+        <label for="run-command">Command to run tests (eg: pybot my_test_folder)</label>
+        <input type="text" class="form-control" id="run-command" placeholder="pybot command" style="width: 90%;">
+        <p class="help-block">Optional %SUITE will be replaced with the name of the current suite. Note: the current file will <i>not</i> be added to the command. You must give a complete command line for running tests.</p>
+      </div>
+
+      <div class="form-group">
+        <label for="rflint-command">Command to run robotframework-lint (eg: rflint)</label>
+        <input type="text" class="form-control" id="rflint-command" placeholder="rflint command" style="width: 90%;">
+        <p class="help-block">The command can include any rflint arguments. For example: rflint --argumentfile mypreferences.args. Note: The current filename will be appended to whatever command you give. </p>
+      </div>
+
+      <div class="form-group">
+        <label for="rfhub-url">URL of robotframework-hub (eg: http://locahost:7070)</label>
+        <input type="text" class="form-control" id="rfhub-url" placeholder="robotframework-hub URL" style="width: 90%;">
+        <p class="help-block">Robotframework-hub provides data for quick-docs and autocomplete.</p>
+      </div>
+
+    </form>
+
+  </div>
+  <div class="modal-footer">
+    <button data-button-id="ok" class="dialog-button btn primary left">OK</button>
+    <button data-button-id="defaults" class="dialog-button btn left">Reset Defaults</button>
+    <button data-button-id="cancel" class="dialog-button btn cancel">Cancel</button>
+  </div>
+</div>
+d
