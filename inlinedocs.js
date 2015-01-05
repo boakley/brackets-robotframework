@@ -50,7 +50,7 @@ define(function (require, exports, module) {
 
         var result = null;
         var data = callRFHub(url);
-        if (data.keywords.length > 0) {
+        if (data !== null && data.keywords.length > 0) {
             result = {
                 args:        data.keywords[0].args,
                 doc:         data.keywords[0].doc,
