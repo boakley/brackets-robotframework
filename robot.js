@@ -275,6 +275,111 @@ define(function (require, exports, module) {
                 end: ranges[n].end};
     }
 
+    /**
+       Special processing for mouse clicks. Specifically, triple-
+       and quadruple-clicks. 
+     */
+    function on_click(cm, event) {
+        var pos;
+        var selection;
+        var cell;
+
+        if (event.detail === 3) {
+            pos = cm.getCursor("from");
+            // triple-click
+            if (select_current_variable(cm, pos)) {
+                event.preventDefault();
+                return
+
+            } else {
+                if (select_current_cell(cm, pos)) {
+                    event.preventDefault();
+                    return
+                }
+            }
+
+        } else if (event.detail === 4) {
+            // if there is already a selection and the selection
+            // matches the variable syntax, we must assume the
+            // selection was set by a triple-click. In such a case
+            // the quadruple-click should select the whole cell
+            // (if it wasn't already selected)
+            selection = cm.getSelection()
+            pos = cm.getCursor("from");
+            if (selection.match(/\$\{.*\}/)) {
+                cell = get_current_cell(cm, pos)
+                if (cell && cell.text != selection) {
+                    if (select_current_cell(cm, pos)) {
+                        event.preventDefault();
+                        return;
+                    }
+                }
+            }
+        }
+    }
+    
+    /**
+     * Select the current cell; return true if successful
+     */
+    function select_current_cell(cm, pos) {
+        var cell = get_current_cell(cm, pos);
+        if (cell) {
+            EditorManager.getCurrentFullEditor()
+                .setSelection(cell.start, cell.end);
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * if the cursor is inside a variable, select it and
+     * return true; otherwise, return false.
+     */
+    function select_current_variable(cm, pos) {
+        var variable = get_current_variable(cm, pos);
+        if (variable) {
+            EditorManager.getCurrentFullEditor()
+                .setSelection(variable.start, variable.end);
+            return true;
+        }
+        return false;
+    }
+    
+    /**
+       If the cursor is inside a variable (ie: inbetween ${...}),
+       this will return the start and end positions and the text
+       betweent those positions.
+     */
+    function get_current_variable(cm, pos) {
+        // if the cursor is inside a variable, return the 
+        // starting and ending position.
+        var cursor = cm.getSearchCursor("${", pos);
+        var match = cursor.findPrevious();
+        var start, end, text;
+        if (match) {
+            // found what looks like the start of a variable; 
+            // let's see if we can find the end. 
+            start = cursor.from()
+            cursor = cm.getSearchCursor("}", start);
+            match = cursor.findNext()
+            if (match) {
+                end = cursor.to()
+                if (start.line == pos.line && end.line == pos.line &&
+                    start.ch <= pos.ch && end.ch >= pos.ch) {
+                    
+                    text = cm.getRange(start, end)
+
+                    return {
+                        text: text,
+                        start: start,
+                        end: end
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
     function on_tab(cm) {
         // maybe-possibly insert a pipe, or move to the next
         // table cell.
@@ -538,6 +643,7 @@ define(function (require, exports, module) {
     exports.overlay_mode = overlay_mode;
     exports.base_mode = base_mode;
     exports.on_tab = on_tab;
+    exports.on_click = on_click;
     exports.get_current_cell = get_current_cell;
     exports.get_current_cell_number = get_current_cell_number;
     exports.get_cell_contents = get_cell_contents;
