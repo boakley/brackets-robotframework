@@ -144,6 +144,19 @@ define(function (require, exports, module) {
             return false;
         }
 
+        function isSubheading(stream, state) {
+            // Return true if a cell begins with two or more colons
+            // (eg: ":: Log in") Admittedly, this is a non-standard
+            // feature, but it should be pretty harmless (or useful!)
+            // for others. My team defines a keyword named ":: {$text}"
+            // which we use to organize our code in a long test case
+            // or keyword.
+            if (stream.match(/^\s*:::? \S.*$/)) {
+                return true;
+            }
+            return false;
+        }
+
         function isComment(stream, state) {
             // Return true if a cell begins with a hash (and optional leading whitesp
             if (stream.match(/^\s*#/)) {
@@ -197,6 +210,19 @@ define(function (require, exports, module) {
                 // table headings (eg: *** Test Cases ***)
                 if (isHeading(stream, state)) {
                     return "header";
+                }
+
+                // subheadings
+                // A subheading is a nonstandard thing my team uses. See
+                // the definition of isSubheading for more information...
+                if (isSubheading(stream, state)) {
+                    // It makes sense to use "header" here, but we're already
+                    // using "header", and it has behavior assocated with it.
+                    //
+                    // "def" isn't pendantically correct, but this extension
+                    // doesn't use "def" for anything else, so we might as well
+                    // use it for this. Pretend "def" means "defines a section"
+                    return "def"
                 }
 
                 // yipes! pipes!
