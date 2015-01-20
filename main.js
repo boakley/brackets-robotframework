@@ -52,7 +52,21 @@ define(function (require, exports, module) {
         document.body.appendChild(node);
     }
 
+    function on_click(cm, e) {
+        // handle triple-click events; this is how we begin support for
+        // selecting cell contents with a triple-click
+        var editor = EditorManager.getCurrentFullEditor();
+        if (editor && editor.getModeForDocument() === "robot") {
+            robot.on_click(cm, e)
+        }
+    }
+
     function initializeUI() {
+        // This is not the right way to do this. For exmaple, if you 
+        // open a file in a different mode then swith to robot mode,
+        // this code won't fire. What's the right way to do this?
+
+
         // do some mode-specific initialization that can only be done after 
         // an editor has been instantiated.
         var editor = EditorManager.getCurrentFullEditor();
@@ -65,6 +79,9 @@ define(function (require, exports, module) {
                 var extraKeys = cm.getOption('extraKeys');
                 extraKeys.Tab = robot.on_tab;
                 cm.addOverlay(robot.overlay_mode());
+
+                // this is so we can do something special for triple-clicks
+                cm.on("mousedown", on_click);
             }
         }
     }
