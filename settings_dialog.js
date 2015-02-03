@@ -10,7 +10,6 @@ define(function (require, exports, module) {
     var prefs = PreferencesManager.getExtensionPrefs("robotframework");
 
     function setFormValues(prefs) {
-        console.log("setting form values...");
 	$("#run-command").val(prefs.get("run-command"));
 	$("#rflint-command").val(prefs.get("rflint-command"));
         $("#rfhub-url").val(prefs.get("hub-url"));
@@ -18,7 +17,6 @@ define(function (require, exports, module) {
 
     function showSettingsDialog() {
 
-        console.log("show_prefs_dialog...");
         var form_data = {
             "run-command": prefs.get("run-command"),
             "rflint-command": prefs.get("rflint-command")
