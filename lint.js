@@ -48,13 +48,23 @@ define(function (require, exports, module) {
                     if (_isUniqueError(result.errors, error)) {
                         result.errors.push(error);
                     }
+                } else {
+                    // some other sort of output we didn't expect.
+                    if (line.length > 0) {
+                        var error = {
+                            pos: {},
+                            message: "unexpected output from rflint: " + line,
+                            type: CodeInspection.Type.META
+                        };
+                        result.errors.push(error);
+                    }
                 }
             });
         });
 
         $(rflintDomain).on("stderr", function (e, data) {
             var error = {
-                pos: {line: -1, ch: -1},
+                pos: {},
                 message: data.data,
                 type: CodeInspection.Type.ERROR
             };
