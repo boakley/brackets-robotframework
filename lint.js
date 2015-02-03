@@ -100,17 +100,18 @@ define(function (require, exports, module) {
 
     function handleLintRequest(text, fullPath) {
 
+        var _prefs = PreferencesManager.getExtensionPrefs("robotframework");
+        var rflint_command = _prefs.get("rflint-command").trim();
+
         // if the file is empty, don't do anything. (oddly, brackets seems
         // to run lint when you first create a brand new file)
-        if (text.replace(/ /g, '').length === 0) {
+        if (rflint_command.length === 0 || text.trim().length === 0) {
             // is this the proper way to cancel the request?
             response = new $.Deferred();
             response.resolve();
             return response.promise();
         }
 
-        var _prefs = PreferencesManager.getExtensionPrefs("robotframework");
-        var rflint_command = _prefs.get("rflint-command");
 
         var cwd = ProjectManager.getProjectRoot().fullPath;
 
