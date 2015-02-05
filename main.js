@@ -9,12 +9,15 @@ define(function (require, exports, module) {
     'use strict';
   
     var CommandManager  = brackets.getModule("command/CommandManager");
+    var Dialogs         = brackets.getModule("widgets/Dialogs");
+    var DefaultDialogs  = brackets.getModule("widgets/DefaultDialogs");
     var LanguageManager = brackets.getModule("language/LanguageManager");
     var AppInit         = brackets.getModule("utils/AppInit");
     var CodeHintManager = brackets.getModule("editor/CodeHintManager");
     var PreferencesManager = brackets.getModule("preferences/PreferencesManager");
     var EditorManager   = brackets.getModule("editor/EditorManager");
     var MainViewManager = brackets.getModule("view/MainViewManager");
+    var FindInFilesUI   = brackets.getModule("search/FindInFilesUI");
 
     var Menus           = brackets.getModule("command/Menus");
     var CodeInspection  = brackets.getModule("language/CodeInspection");
@@ -29,6 +32,7 @@ define(function (require, exports, module) {
     var rangefinder     = require("./rangefinder");
     var settings_dialog = require("./settings_dialog");
 
+    var FIND_DEFINITION_ID  = "bryanoakley.find-definition";
     var TOGGLE_KEYWORDS_ID  = "bryanoakley.show-robot-keywords";
     var TOGGLE_RUNNER_ID    = "bryanoakley.show-robot-runner";
     var SELECT_STATEMENT_ID = "bryanoakley.select-statement";
@@ -102,6 +106,12 @@ define(function (require, exports, module) {
                                 runner.runSuite)
         CommandManager.register("Robot Settings ...", EDIT_SETTINGS_ID,
                                 settings_dialog.showSettingsDialog);
+        CommandManager.register("Find Definition ...", FIND_DEFINITION_ID,
+                                findDefinition);
+        robotMenu.addMenuItem(FIND_DEFINITION_ID,
+                              [{key: "Ctrl-Alt-F"},
+                               {key: "Ctrl-Alt-F", platform: "mac"},
+                              ]);
         robotMenu.addMenuItem(SELECT_STATEMENT_ID, 
                              [{key: "Ctrl-\\"}, 
                               {key: "Ctrl-\\", platform: "mac"}]);
@@ -126,6 +136,45 @@ define(function (require, exports, module) {
         robotMenu.addMenuDivider();
         robotMenu.addMenuItem(EDIT_SETTINGS_ID);
 
+    }
+
+    /**
+       Use the "Find In File" feature to find where a keyword is
+       defined. This is a quick and dirty hack that simply looks
+       for the keyword name at the beginning of a line, and preceded
+       by either a space or a pipe and space. 
+
+       Perhaps in the future this can pull data from robotframework-hub.
+     */
+    function findDefinition() {
+
+        var editor = EditorManager.getCurrentFullEditor()
+        var selection = editor.getSelectedText().trim();
+
+        if (selection === "") {
+            // should we display a warning dialog?
+            Dialogs.showModalDialog(
+                DefaultDialogs.DIALOG_ID_INFO,
+                "Find Definition..",
+                "To use this feature, first highlight a keyword name.");
+            return;
+        }
+        
+        // escape any regex characters in the selection
+        selection = selection.replace(/[.?*+^$[\]\\(){}|-]/g, "\\$&");
+
+        // build a pattern that matches either '^| foo' or '^\s*foo'
+        var pattern = "^(\\|\\s+|\\s*)" + selection;
+
+        var queryInfo = {
+            query: pattern, 
+            isCaseSensitive: false,
+            isRegexp: true
+        };
+
+        // I get no notification if it doesn't find anything. That
+        // sucks. 
+        FindInFilesUI.searchAndShowResults(queryInfo);
     }
 
     function initializeCodemirror() {
