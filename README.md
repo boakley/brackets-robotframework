@@ -4,19 +4,24 @@ brackets-robotframework
 This brackets extension provides syntax highlighting for robotframework test cases
 and resource files that use the pipe-delimited plain-text format.
 
-This is a very early version of the plugin, with very few features. At present, the
-primary features are:
+This extension includes the following features:
 
 - Syntax highlighting
 - Code folding 
 - Special handling of the \<tab\> key
 - Code completion (if robotframework-hub is running)
 - Quickdocs for keywords (if robotframework-hub is running)
+- Integration with robotframework-lint
+- Run tests from within the editor
 
 For code completion and quickdocs you need to install and run 
-the robotframework hub. see https://github.com/boakley/robotframework-hub
+the robotframework hub. See https://github.com/boakley/robotframework-hub
 
-Usage:
+For robotframework-lint support you must install robotframework-lint.
+See https://github.com/boakley/robotframework-lint
+
+Usage
+-----
 
 In addition to syntax highllighting, this extension currently overrides the default
 behavior of the Tab key. Instead of indenting a line of code, it will attempt to insert
