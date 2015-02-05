@@ -1,3 +1,17 @@
+## 1.1.3 - 2015-02-05
+
+### Added
+
+* dialog for setting preferences
+* integration with robotframework-lint
+* triple-click select everything in a cell, or an entire variable
+* added experimental "Find Definition" command for finding where a
+  keyword is defined
+	
+### Fixed
+* removed use of deprecated brackets API functions
+* #9 - Add support for "Find Definition"
+
 ## 1.0.0 - 2014-09-09
 
 Version 1.0.0 brings some major new functionality: search keywords
