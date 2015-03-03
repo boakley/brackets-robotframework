@@ -1,3 +1,10 @@
+## 1.1.4 - 2015-03-03
+minor bug fix 
+
+### Fixed
+* fixed deprecation warnings in brackets 1.2:
+  "Deprecated: Do not use $().on/off() on Brackets modules and model"
+
 ## 1.1.3 - 2015-02-05
 
 ### Added

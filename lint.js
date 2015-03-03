@@ -16,7 +16,7 @@ define(function (require, exports, module) {
 
     function init() {
 
-        $(rflintDomain).on("stdout", function (e, data) {
+        rflintDomain.on("stdout", function (e, data) {
             var lines = data.data.split("\n");
             var regex = /^(W|E):\s*(\d+),\s*(\d+):\s*(.*)/;
             var type;
@@ -62,7 +62,7 @@ define(function (require, exports, module) {
             });
         });
 
-        $(rflintDomain).on("stderr", function (e, data) {
+        rflintDomain.on("stderr", function (e, data) {
             var error = {
                 pos: {},
                 message: data.data,
@@ -73,11 +73,11 @@ define(function (require, exports, module) {
             }
         });
                        
-        $(rflintDomain).on("error", function (e, data) {
+        rflintDomain.on("error", function (e, data) {
             response.resolve(result);
         });
 
-        $(rflintDomain).on("exit", function (e, data) {
+        rflintDomain.on("exit", function (e, data) {
             response.resolve(result);
         });
     }

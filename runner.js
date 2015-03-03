@@ -62,7 +62,7 @@ define(function (require, exports, module) {
             }
         });
 
-        $(robotDomain).on("stdout", function(e, data) {
+        robotDomain.on("stdout", function(e, data) {
             var s = data.data;
 
             // convert log and report to hyperlinks
@@ -86,12 +86,12 @@ define(function (require, exports, module) {
             $runnerContent.scrollTop($runnerContent.prop("scrollHeight"));
         });
 
-        $(robotDomain).on("stderr", function(e, data) {
+        robotDomain.on("stderr", function(e, data) {
             $runnerContent.append("<br><span class='stderr'>" + data.data + "</span>");
             $runnerContent.scrollTop($runnerContent.prop("scrollHeight"));
         });
 
-        $(robotDomain).on("exit", function(e, data) {
+        robotDomain.on("exit", function(e, data) {
             _setAction(runSuite);
         });
 
