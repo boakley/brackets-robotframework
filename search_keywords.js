@@ -13,7 +13,8 @@ define(function (require, exports, module) {
         EditorManager       = brackets.getModule("editor/EditorManager"),
         ExtensionUtils      = brackets.getModule("utils/ExtensionUtils"),
         Menus               = brackets.getModule("command/Menus"),
-        WorkspaceManager    = brackets.getModule('view/WorkspaceManager');
+        WorkspaceManager    = brackets.getModule('view/WorkspaceManager'),
+        MainViewManager     = brackets.getModule('view/MainViewManager');
 
     var prefs = PreferencesManager.getExtensionPrefs("robotframework");
 
@@ -191,7 +192,7 @@ define(function (require, exports, module) {
             panel.hide();
             keyList = [];
             CommandManager.get(TOGGLE_KEYWORDS_ID).setChecked(false);
-            EditorManager.focusEditor();
+            MainViewManager.focusActivePane();
 
         } else {
             panel.show();
@@ -200,7 +201,7 @@ define(function (require, exports, module) {
 
             initializeKeywordList();
         }
-        EditorManager.resizeEditor();
+        WorkspaceManager.recomputeLayout();
     }
 
     function initializeKeywordList() {
