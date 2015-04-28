@@ -63,14 +63,15 @@ define(function (require, exports, module) {
         }
 
         function canonicalTableName(name) {
-            // This returns the canonical name for a table, which will be
-            // one of "settings", "test_cases", "keywords", or "variables"
+            // This returns the canonical (internal) name for a table,
+            // which will be one of "settings", "test_cases",
+            // "keywords", or "variables"
             //
-            // This function may return null if name isn't one of the
+            // This function will return null if name isn't one of the
             // strings supported by robot
             name = name.trim().toLowerCase();
             if (name.match("settings?|metadata")) {return "settings"; }
-            if (name.match("(test )?cases?"))     {return "test_cases"; }
+            if (name.match("test ?cases?"))       {return "test_cases"; }
             if (name.match("(user )?keywords?"))  {return "keywords"; }
             if (name.match("variables?"))         {return "variables"; }
             return null;
@@ -82,7 +83,7 @@ define(function (require, exports, module) {
             // can have more than one asterisk, and trailing asterisks are optional,
             // and the table names must be one of the recognized table names
             if (stream.sol()) {
-                var match = stream.match(/^\s*\*+\s*(settings?|metadata|variables?|test( cases?)?|(user )?keywords?)[ *]*$/i);
+                var match = stream.match(/^\s*\*+\s*(settings?|metadata|variables?|test ?cases?|(user )?keywords?)[ *]*$/i);
                 if (match !== null) {
                     state.table_name = canonicalTableName(match[1]);
                     state.tc_or_kw_name = null;
