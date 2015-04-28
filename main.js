@@ -204,7 +204,7 @@ define(function (require, exports, module) {
     }
     
     AppInit.appReady(function () {
-        $(MainViewManager).on("currentFileChange", initializeUI);
+        MainViewManager.on("currentFileChange", initializeUI);
         // the event is *not* fired for the initial document, so 
         // we have to call it directly at startup.
         // N.B. this used to be true prior to brackets 1.0; maybe
