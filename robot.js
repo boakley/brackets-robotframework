@@ -50,10 +50,15 @@ define(function (require, exports, module) {
                     // escaped character; gobble up the following character
                     stream.next();
 
-                } else if (ch == " ") {
+                } else if (state.pipeSeparated() && ch == " ") {
                     // space followed by pipe, then whitespace or EOL
                     // This signals the end of a cell in a row
                     if (stream.match(/\|(\s|$)/, false)) {
+                        stream.backUp(1);
+                        break;
+                    }
+                } else if (state.spaceSeparated() && ch == " ") {
+                    if (stream.match(/\s/, false)) {
                         stream.backUp(1);
                         break;
                     }
@@ -102,7 +107,14 @@ define(function (require, exports, module) {
 
         function isSeparator(stream, state) {
             // Return true if the stream is currently in a separator
-            var match = stream.match(/(^|\s)\|(\s|$)/);
+            var match = null;
+            if (state.pipeSeparated()) {
+                match = stream.match(/(^|\s)\|(\s|$)/);
+            } else if (state.spaceSeparated()) {
+                match = stream.match(/(\s{2,})/);
+            } else if (state.tabSeparated()) {
+                match = stream.match(/(\t+)/);
+            }
             return match;
         }
 
@@ -137,7 +149,7 @@ define(function (require, exports, module) {
         }
 
         function isName(stream, state) {
-            // Return true if this is column 0 in a test case or keyword table
+            // Return true if this is the first column in a test case or keyword table
             if (state.column === 0 && (state.isTestCasesTable() || state.isKeywordsTable())) {
                 state.tc_or_kw_name = stream.current();
                 return true;
@@ -172,21 +184,27 @@ define(function (require, exports, module) {
                     table_name: null,
                     tc_or_kw_name: null,
                     column: -1,
-                    separator: "pipe",
+                    separator: "pipes", // maybe we should get this from preferences?
                     isSettingsTable: function () {return (this.table_name === "settings"); },
                     isVariablesTable: function () {return (this.table_name === "variables"); },
                     isTestCasesTable: function () {return (this.table_name === "test_cases"); },
-                    isKeywordsTable: function () {return (this.table_name === "keywords"); }
+                    isKeywordsTable: function () {return (this.table_name === "keywords"); },
+                    pipeSeparated: function () {return (this.separator == "pipes"); },
+                    spaceSeparated: function () {return (this.separator == "spaces"); },
+                    tabSeparated: function () {return (this.separator == "tabs"); }
                 };
             },
 
             token: function (stream, state) {
 
-                // determine separator mode -- pipes or spaces
+                // determine separator mode for this line -- pipes or spaces
                 if (stream.sol()) {
                     if (stream.peek() === "|") {
                         state.separator = "pipes";
                         state.column = -1;
+                    } else if (stream.peek() === "\t") {
+                        state.separator = "tabs";
+                        state.column = 0;
                     } else {
                         state.column = 0;
                         state.separator = "spaces";
@@ -195,7 +213,11 @@ define(function (require, exports, module) {
 
                 // comments at the start of a line
                 if (stream.sol()) {
-                    state.column = -1;
+                    if (state.pipeSeparated()) {
+                        state.column = -1;
+                    } else {
+                        state.column = 0
+                    }
                     if (stream.match(/\s*#/)) {
                         stream.skipToEnd();
                         return "comment";
@@ -476,7 +498,7 @@ define(function (require, exports, module) {
 
     function auto_indent(cm, pos) {
         // attempt to insert an appropriate number of leading
-        // pipes on a line
+        // pipes or spaces on a line
 
         // FIXME: this code may be working too hard; in many cases
         // I probably should just insert whatever the previous
@@ -485,11 +507,20 @@ define(function (require, exports, module) {
         var state = cm.getStateAfter(pos.line);
         var currentLine = cm.getLine(pos.line);
 
-        if (currentLine === "") {
-            // blank line; insert "| "
-            cm.replaceRange("| ", pos)
-            return true;
+        if (currentLine === "" && typeof state != "undefined") {
+            if (state.spaceSeparated()) {
+                cm.replaceRange("    ", pos)
+                return true;
+            } else if (state.pipeSeparated()) {
+                // blank line; insert "| "
+                cm.replaceRange("| ", pos)
+                return true;
+            } else if (state.tabSeparated()) {
+                cm.replaceRange("\t", pos)
+                return true;
+            }
         }
+
         if (currentLine.match(/^\|\s+$/)) {
             // one pipe and some spaces
             if (typeof state != "undefined") {
