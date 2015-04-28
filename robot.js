@@ -649,7 +649,7 @@ define(function (require, exports, module) {
 
     function _find_statement_end(editor, pos) {
         var nextline = editor.document.getLine(pos.line+1);
-        while (nextline.match(/^\|\s+\|\s+\.\.\.\s+\|($|\s+)/)) {
+        while (nextline && nextline.match(/^\|\s+\|\s+\.\.\.\s+\|($|\s+)/)) {
             pos.line += 1;
             nextline = editor.document.getLine(pos.line+1);
         }
