@@ -77,10 +77,21 @@ define(function (require, exports, module) {
             return false;
         }
 
+        function isSpecial(stream, state) {
+            var cell = stream.current().trim()
+            // this isn't 100% precise, but it's good enough for now.
+            if ([":FOR", "IN", "IN RANGE", "WITH NAME", "AND"].indexOf(cell) >= 0) {
+                return true;
+            }
+        }               
+
         function isContinuation(stream, state) {
             // Return true if the stream is currently in a
-            // continuation cell
-            return (state.column === 1 && stream.current().trim() === "...");
+            // continuation cell. This will catch random data
+            // that is not the first non-empty cell on a line,
+            // but that's such a rare thing that it's not a
+            // big deal.
+            return (stream.current().trim() === "...");
         }
 
         function isSetting(stream, state) {
@@ -232,6 +243,12 @@ define(function (require, exports, module) {
                     if (isSetting(stream, state))      {return "attribute"; }
                     if (isName(stream, state))         {return "keyword"; }
                 }
+
+                // special constructs, like :FOR
+                if (isSpecial(stream, state)) {
+                    return "builtin"
+                }
+
                 return null;
             }
         };
@@ -401,7 +418,7 @@ define(function (require, exports, module) {
 
         if (state.separator !== "pipes") {
             // magic tab key is not currently supported for
-            // space-separated format
+            // space-separated format. 
             cm.replaceRange("\t", pos);
             return;
         }
