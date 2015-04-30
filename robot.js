@@ -395,6 +395,17 @@ define(function (require, exports, module) {
     }
 
     function on_tab(cm) {
+        var pos = cm.getCursor();
+        var state = cm.getStateAfter(pos.line);
+        var currentLine = cm.getLine(pos.line);
+
+        if (state.separator !== "pipes") {
+            // magic tab key is not currently supported for
+            // space-separated format
+            cm.replaceRange("\t", pos);
+            return;
+        }
+
         // maybe-possibly insert a pipe, or move to the next
         // table cell.
         //
@@ -405,12 +416,9 @@ define(function (require, exports, module) {
         // if at EOL, and line ends with space-pipe, remove the space-pipe,
         // insert a newline, and match the leading characters of the line
 
-        var pos = cm.getCursor();
-        var currentLine = cm.getLine(pos.line);
 
         // attempt to auto-indent; this will return true if it does
         // something which this block shouldn't mess with.
-        var state = cm.getStateAfter(pos.line);
         if (!state.auto_indent(cm, pos)) {
             // if we are at the end of the line and we're not
             // preceeded by a separator AND we're not in a table
