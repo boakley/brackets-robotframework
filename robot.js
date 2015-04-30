@@ -8,6 +8,11 @@ define(function (require, exports, module) {
 
     var EditorManager = brackets.getModule("editor/EditorManager");
 
+    var mode = {
+        pipes: require("./pipe_mode"),
+        spaces: require("./space_mode")
+    }
+
     function overlay_mode(config, parserConfig) {
         // This defines an overlay mode that matches robot
         // variables (eg: ${...}, %{...}, @{...})
@@ -39,33 +44,6 @@ define(function (require, exports, module) {
 
     // this is the main mode for robot files
     function base_mode(config, parserConfig) {
-
-        function eatCellContents(stream, state) {
-            // gobble up characters until the end of the line or we find a separator
-
-            var ch;
-
-            while ((ch = stream.next()) != null) {
-                if (ch === "\\") {
-                    // escaped character; gobble up the following character
-                    stream.next();
-
-                } else if (state.pipeSeparated() && ch == " ") {
-                    // space followed by pipe, then whitespace or EOL
-                    // This signals the end of a cell in a row
-                    if (stream.match(/\|(\s|$)/, false)) {
-                        stream.backUp(1);
-                        break;
-                    }
-                } else if (state.spaceSeparated() && ch == " ") {
-                    if (stream.match(/\s/, false)) {
-                        stream.backUp(1);
-                        break;
-                    }
-                }
-            }
-            return (stream.current().length > 0);
-        }
 
         function canonicalTableName(name) {
             // This returns the canonical (internal) name for a table,
@@ -103,19 +81,6 @@ define(function (require, exports, module) {
             // Return true if the stream is currently in a
             // continuation cell
             return (state.column === 1 && stream.current().trim() === "...");
-        }
-
-        function isSeparator(stream, state) {
-            // Return true if the stream is currently in a separator
-            var match = null;
-            if (state.pipeSeparated()) {
-                match = stream.match(/(^|\s)\|(\s|$)/);
-            } else if (state.spaceSeparated()) {
-                match = stream.match(/(\s{2,})/);
-            } else if (state.tabSeparated()) {
-                match = stream.match(/(\t+)/);
-            }
-            return match;
         }
 
         function isSetting(stream, state) {
@@ -191,40 +156,41 @@ define(function (require, exports, module) {
                     isKeywordsTable: function () {return (this.table_name === "keywords"); },
                     pipeSeparated: function () {return (this.separator == "pipes"); },
                     spaceSeparated: function () {return (this.separator == "spaces"); },
-                    tabSeparated: function () {return (this.separator == "tabs"); }
+                    tabSeparated: function () {return (this.separator == "tabs"); },
+                    setMode: function (new_mode) {
+                        // map mode-specific functions to the state object
+                        this.separator = new_mode;
+                        this.isSeparator = mode[new_mode].isSeparator;
+                        this.eatCellContents = mode[new_mode].eatCellContents;
+                        this.newline_and_indent = mode[new_mode].newline_and_indent;
+                        this.auto_indent = mode[new_mode].auto_indent;
+                    }
                 };
             },
 
             token: function (stream, state) {
 
+                if (stream.start === 0 && stream.pos === 0) {
+                    state.setMode("spaces");
+                }
+
                 // determine separator mode for this line -- pipes or spaces
                 if (stream.sol()) {
                     if (stream.peek() === "|") {
+                        state.setMode("pipes")
                         state.separator = "pipes";
                         state.column = -1;
                     } else if (stream.peek() === "\t") {
                         state.separator = "tabs";
                         state.column = 0;
                     } else {
+                        state.setMode("spaces")
                         state.column = 0;
                         state.separator = "spaces";
                     }
                 }
 
-                // comments at the start of a line
-                if (stream.sol()) {
-                    if (state.pipeSeparated()) {
-                        state.column = -1;
-                    } else {
-                        state.column = 0
-                    }
-                    if (stream.match(/\s*#/)) {
-                        stream.skipToEnd();
-                        return "comment";
-                    }
-                }
-
-                // inline comments
+                // comments
                 if (isComment(stream, state)) {
                     stream.skipToEnd();
                     return "comment";
@@ -248,11 +214,10 @@ define(function (require, exports, module) {
                     return "def"
                 }
 
-                // yipes! pipes!
-                // don't ever use "cell-separator" for anything
-                // but cell separators. We use this for parsing
-                // tokens in other places in the code.
-                if (isSeparator(stream, state)) {
+                // N.B. Don't ever use "cell-separator" for anything
+                // but cell separators. We use this for parsing tokens
+                // in other places in the code.
+                if (state.isSeparator(stream, state)) {
                     state.column += 1;
                     // this is a custom class (cm-cell-separator)
                     // defined in main.js
@@ -260,7 +225,7 @@ define(function (require, exports, module) {
                 }
 
                 var c;
-                if ((c = eatCellContents(stream, state))) {
+                if ((c = state.eatCellContents(stream, state))) {
                     // a table cell; it may be one of several flavors
                     if (isContinuation(stream, state)) {return "meta"; }
                     if (isLocalSetting(stream, state)) {return "builtin"; }
@@ -445,7 +410,8 @@ define(function (require, exports, module) {
 
         // attempt to auto-indent; this will return true if it does
         // something which this block shouldn't mess with.
-        if (!auto_indent(cm, pos)) {
+        var state = cm.getStateAfter(pos.line);
+        if (!state.auto_indent(cm, pos)) {
             // if we are at the end of the line and we're not
             // preceeded by a separator AND we're not in a table
             // header, insert a separator. Otherwise, trim the trailing
@@ -455,7 +421,7 @@ define(function (require, exports, module) {
                 if (pos.ch == currentLine.length) { // cursor at eol
                     if (currentLine.match(/\.\.\. +\|\s*$/)) {
                         // continuation line
-                        newline_and_indent(cm, pos);
+                        state.newline_and_indent(cm, pos);
                         return;
 
                     } else if (currentLine.match(/ +\|\s*$/)) {
@@ -464,7 +430,7 @@ define(function (require, exports, module) {
                         var cursor = cm.getSearchCursor(/(\s+)\|\s*/, pos);
                         var match = cursor.findPrevious();
                         cursor.replace("");
-                        newline_and_indent(cm, pos);
+                        state.newline_and_indent(cm, pos);
                         return;
 
                     } else if (!currentLine.match(/ \|\s+$/)) {
@@ -482,18 +448,6 @@ define(function (require, exports, module) {
             // all else fails, try moving to the next column
             move_to_next_cell(cm, pos);
         }
-    }
-
-    function newline_and_indent(cm, pos) {
-        // insert a newline, then match the indentation of the line
-        var currentLine = cm.getLine(pos.line);
-        var match = currentLine.match(/^([.|\s]+)/);
-        if (match) {
-            cm.replaceRange("\n" + match[0], pos);
-        } else {
-            cm.replaceRange("\n", pos);
-        }
-
     }
 
     function auto_indent(cm, pos) {
