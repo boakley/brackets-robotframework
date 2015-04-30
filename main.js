@@ -67,7 +67,7 @@ define(function (require, exports, module) {
 
     function initializeUI() {
         // This is not the right way to do this. For exmaple, if you 
-        // open a file in a different mode then swith to robot mode,
+        // open a file in a different mode then switch to robot mode,
         // this code won't fire. What's the right way to do this?
 
 
