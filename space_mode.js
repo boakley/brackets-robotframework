@@ -8,11 +8,25 @@
 define(function (require, exports, module) {
     "use strict";
 
+    var PreferencesManager = brackets.getModule("preferences/PreferencesManager");
+
     function isSeparator(stream) {
         // Return true if the stream is currently in a separator
         // (read: tab, or two or more whitespace characters
         var match = stream.match(/(\t|\s{2,})/);
         return match;
+    }
+
+    function onTab(cm, pos, state) {
+        var useTabChar = PreferencesManager.get("useTabChar");
+        var tab = "\t";
+        if (!useTabChar) {
+            var spaceUnits = PreferencesManager.get("spaceUnits");
+            console.log("spaceUnits:", spaceUnits);
+            tab = new Array(spaceUnits+1).join(" ");
+        }
+        cm.replaceRange(tab, pos);
+        return;
     }
 
     function eatCellContents(stream, state) {
@@ -41,4 +55,5 @@ define(function (require, exports, module) {
 
     exports.isSeparator = isSeparator;
     exports.eatCellContents = eatCellContents;
+    exports.onTab = onTab;
 })

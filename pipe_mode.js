@@ -48,53 +48,111 @@ define(function (require, exports, module) {
 
     }
 
+    function onTab(cm, pos, state) {
+        var currentLine = cm.getLine(pos.line);
+
+        // maybe-possibly insert a pipe
+        //
+        // Pressing tab repeatedly inserts this:
+        // "| " -> "| | " -> "| | ... | "
+        //
+        // if at EOL, and line ends with space-pipe, remove the space-pipe,
+        // insert a newline, and match the leading characters of the line
+
+        if (!state.auto_indent(cm, pos)) {
+            // if we are at the end of the line and we're not
+            // preceeded by a separator AND we're not in a table
+            // header, insert a separator. Otherwise, trim the trailing
+            // empty cell and move to the next line.
+            var token = cm.getTokenAt(pos);
+            if (token.type != "header" && token.type != "comment") {
+                if (pos.ch == currentLine.length) { // cursor at eol
+                    if (currentLine.match(/\.\.\. +\|\s*$/)) {
+                        // continuation line
+                        state.newline_and_indent(cm, pos);
+                        return;
+
+                    } else if (currentLine.match(/ +\|\s*$/)) {
+                        // trailing empty cell; remove it and go to
+                        // the next line
+                        var cursor = cm.getSearchCursor(/(\s+)\|\s*/, pos);
+                        var match = cursor.findPrevious();
+                        cursor.replace("");
+                        state.newline_and_indent(cm, pos);
+                        return;
+
+                    } else if (!currentLine.match(/ \|\s+$/)) {
+                        if (currentLine.match(/ +$/)) {
+                            // already trailing space, just add pipe-space
+                            cm.replaceRange("| ", pos)
+                        } else {
+                            // no trailing space; add space-pipe-space
+                            cm.replaceRange(" | ", pos);
+                        }
+                        return;
+                    }
+                }
+            }
+            // all else fails, try moving to the next column
+            move_to_next_cell(cm, pos);
+        }
+    }
+
     function auto_indent(cm, pos) {
         // attempt to insert an appropriate number of leading
-        // pipes on a line
+        // pipes and spaces on a line
+
+        // FIXME: this code may be working too hard; in many cases
+        // I probably should just insert whatever the previous
+        // line has.
 
         var state = cm.getStateAfter(pos.line);
-
-        if (typeof state === "undefined") {
-            return false;
-        }
-
         var currentLine = cm.getLine(pos.line);
-        if (currentLine === "") {
-            // blank line -> "| "
-            cm.replaceRange("| ", pos)
-            return true;
+
+        if (currentLine === "" && typeof state != "undefined") {
+            if (state.spaceSeparated()) {
+                cm.replaceRange("    ", pos)
+                return true;
+            } else if (state.pipeSeparated()) {
+                // blank line; insert "| "
+                cm.replaceRange("| ", pos)
+                return true;
+            } else if (state.tabSeparated()) {
+                cm.replaceRange("\t", pos)
+                return true;
+            }
         }
 
-        if (currentLine.match(/^\|\s*$/)) {
-            if (state.isTestCasesTable() || state.isKeywordsTable()) {
-                // multi-column table
-                cm.replaceRange("| | ",
-                                {line: pos.line, ch: 0},
-                                {line: pos.line, ch: currentLine.length});
-                return true;
-            } else {
-                // two-column table, so in sert a continuation
-                cm.replaceRange("| ... | ",
-                                {line: pos.line, ch: 0},
-                                {line: pos.line, ch: currentLine.length});
-                return true;
+        if (currentLine.match(/^\|\s+$/)) {
+            // one pipe and some spaces
+            if (typeof state != "undefined") {
+                if (state.isTestCasesTable() || state.isKeywordsTable()) {
+                    // line begins with "| "; insert another space-pipe-space
+                    cm.replaceRange("| | ",
+                                    {line: pos.line, ch: 0},
+                                    {line: pos.line, ch: currentLine.length});
+                    return true;
+                } else {
+                    // not a testcase or keyword table; insert a continuation line
+                    cm.replaceRange("| ... | ",
+                                    {line: pos.line, ch: 0},
+                                    {line: pos.line, ch: currentLine.length});
+                    return true;
+                }
             }
             return false;
         }
-
         if (currentLine.match(/^\|\s+\|\s+$/)) {
             if (state.isTestCasesTable() || state.isKeywordsTable()) {
-                // multi-column table; insert continuation
+                // insert a testcase / keyword continuation
                 cm.replaceRange("| | ... | ",
                                 {line: pos.line, ch: 0},
                                 {line: pos.line, ch: currentLine.length});
                 return true;
             }
-            // return here, or no?
             return false;
         }
 
-        // if all else fails, match the previous line
         if (pos.line > 1 && pos.ch == 0 && currentLine.match(/^[^|]/)) {
             var prevLine = cm.getLine(pos.line-1);
             var match = prevLine.match(/[| .]+/);
@@ -108,9 +166,9 @@ define(function (require, exports, module) {
         return false;
     }
 
-
     exports.isSeparator = isSeparator;
     exports.eatCellContents = eatCellContents;
     exports.newline_and_indent = newline_and_indent;
     exports.auto_indent = auto_indent;
+    exports.onTab = onTab;
 })
