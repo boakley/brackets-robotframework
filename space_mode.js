@@ -22,7 +22,6 @@ define(function (require, exports, module) {
         var tab = "\t";
         if (!useTabChar) {
             var spaceUnits = PreferencesManager.get("spaceUnits");
-            console.log("spaceUnits:", spaceUnits);
             tab = new Array(spaceUnits+1).join(" ");
         }
         cm.replaceRange(tab, pos);
@@ -33,7 +32,6 @@ define(function (require, exports, module) {
         // gobble up characters until the end of the line or we find a separator
 
         var ch;
-
         while ((ch = stream.next()) != null) {
             if (ch === "\\") {
                 // escaped character; gobble up the following character
