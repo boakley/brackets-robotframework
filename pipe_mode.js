@@ -8,6 +8,8 @@
 define(function (require, exports, module) {
     "use strict";
 
+    var robot = require("./robot");
+
     function isSeparator(stream) {
         // Return true if the stream is currently in a separator
         var match = stream.match(/(^|\s)\|(\s|$)/);
@@ -94,7 +96,7 @@ define(function (require, exports, module) {
                 }
             }
             // all else fails, try moving to the next column
-            moveToNextCell(cm, pos);
+            robot.moveToNextCell(cm, pos);
         }
     }
 
