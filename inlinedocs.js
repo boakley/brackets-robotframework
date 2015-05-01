@@ -75,7 +75,7 @@ define(function (require, exports, module) {
             inlineWidget,
             result;
 
-        // Only provide docs when cursor is in php ("clike") content
+        // Only provide docs when cursor is in robot file
         langId = editor.getLanguageForSelection().getId();
         if (langId !== "robot") {
             return null;
