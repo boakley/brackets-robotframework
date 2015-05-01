@@ -549,4 +549,5 @@ define(function (require, exports, module) {
     exports.getCurrentCell = getCurrentCell;
     exports.getCurrentCellNumber = getCurrentCellNumber;
     exports.getCellContents = getCellContents;
+    exports.moveToNextCell = moveToNextCell;
 })
