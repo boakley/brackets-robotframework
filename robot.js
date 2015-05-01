@@ -13,7 +13,7 @@ define(function (require, exports, module) {
         spaces: require("./space_mode")
     }
 
-    function overlay_mode(config, parserConfig) {
+    function overlayMode(config, parserConfig) {
         // This defines an overlay mode that matches robot
         // variables (eg: ${...}, %{...}, @{...})
         var var_prefix_regex = /[$%@]\{/;
@@ -43,7 +43,7 @@ define(function (require, exports, module) {
 
 
     // this is the main mode for robot files
-    function base_mode(config, parserConfig) {
+    function baseMode(config, parserConfig) {
 
         function canonicalTableName(name) {
             // This returns the canonical (internal) name for a table,
@@ -173,8 +173,6 @@ define(function (require, exports, module) {
                         this.separator = new_mode;
                         this.isSeparator = mode[new_mode].isSeparator;
                         this.eatCellContents = mode[new_mode].eatCellContents;
-                        this.newline_and_indent = mode[new_mode].newline_and_indent;
-                        this.auto_indent = mode[new_mode].auto_indent;
                         this.onTab = mode[new_mode].onTab;
                     }
                 };
@@ -256,7 +254,7 @@ define(function (require, exports, module) {
 
     }
 
-    function get_current_cell_number(cm, pos) {
+    function getCurrentCellNumber(cm, pos) {
         // return cell number; cell after the first
         // pipe is zero; if cursor is at the start of
         // the line, return -1
@@ -265,7 +263,7 @@ define(function (require, exports, module) {
             token_center,
             tokens;
 
-        tokens = get_separator_tokens(cm, pos.line);
+        tokens = getSeparatorTokens(cm, pos.line);
         if (tokens.length === 0) {
             return 0
         }
@@ -281,12 +279,12 @@ define(function (require, exports, module) {
         return tokens.length - 1;
     }
 
-    function get_current_cell(cm, pos) {
+    function getCurrentCell(cm, pos) {
         // return the text of the current cell
-        // FIXME: this is terribly ineffecient. both get_cell_contents
-        // and get_cell_current_cell_number also call get_cell_ranges. 
+        // FIXME: this is terribly ineffecient. both getCellContents
+        // and get_cell_current_cell_number also call getCellRanges. 
         // Is memoization a reasonable solution? 
-        var ranges = get_cell_ranges(cm, pos.line);
+        var ranges = getCellRanges(cm, pos.line);
         var curLine, result;
 
         if (ranges.length === 0) {
@@ -299,8 +297,8 @@ define(function (require, exports, module) {
             return result;
         }
 
-        var cells = get_cell_contents(cm, pos.line);
-        var n = get_current_cell_number(cm, pos);
+        var cells = getCellContents(cm, pos.line);
+        var n = getCurrentCellNumber(cm, pos);
 
         return {text: cells[n],
                 start: ranges[n].start,
@@ -311,7 +309,7 @@ define(function (require, exports, module) {
        Special processing for mouse clicks. Specifically, triple-
        and quadruple-clicks. 
      */
-    function on_click(cm, event) {
+    function onClick(cm, event) {
         var pos;
         var selection;
         var cell;
@@ -319,12 +317,12 @@ define(function (require, exports, module) {
         if (event.detail === 3) {
             pos = cm.getCursor("from");
             // triple-click
-            if (select_current_variable(cm, pos)) {
+            if (selectCurrentVariable(cm, pos)) {
                 event.preventDefault();
                 return
 
             } else {
-                if (select_current_cell(cm, pos)) {
+                if (selectCurrentCell(cm, pos)) {
                     event.preventDefault();
                     return
                 }
@@ -339,9 +337,9 @@ define(function (require, exports, module) {
             selection = cm.getSelection()
             pos = cm.getCursor("from");
             if (selection.match(/\$\{.*\}/)) {
-                cell = get_current_cell(cm, pos)
+                cell = getCurrentCell(cm, pos)
                 if (cell && cell.text != selection) {
-                    if (select_current_cell(cm, pos)) {
+                    if (selectCurrentCell(cm, pos)) {
                         event.preventDefault();
                         return;
                     }
@@ -353,8 +351,8 @@ define(function (require, exports, module) {
     /**
      * Select the current cell; return true if successful
      */
-    function select_current_cell(cm, pos) {
-        var cell = get_current_cell(cm, pos);
+    function selectCurrentCell(cm, pos) {
+        var cell = getCurrentCell(cm, pos);
         if (cell) {
             EditorManager.getCurrentFullEditor()
                 .setSelection(cell.start, cell.end);
@@ -367,8 +365,8 @@ define(function (require, exports, module) {
      * if the cursor is inside a variable, select it and
      * return true; otherwise, return false.
      */
-    function select_current_variable(cm, pos) {
-        var variable = get_current_variable(cm, pos);
+    function selectCurrentVariable(cm, pos) {
+        var variable = getCurrentVariable(cm, pos);
         if (variable) {
             EditorManager.getCurrentFullEditor()
                 .setSelection(variable.start, variable.end);
@@ -382,7 +380,7 @@ define(function (require, exports, module) {
        this will return the start and end positions and the text
        betweent those positions.
      */
-    function get_current_variable(cm, pos) {
+    function getCurrentVariable(cm, pos) {
         // if the cursor is inside a variable, return the 
         // starting and ending position.
         var cursor = cm.getSearchCursor("${", pos);
@@ -412,13 +410,14 @@ define(function (require, exports, module) {
         return null;
     }
 
-    function on_tab(cm) {
+    function onTab(cm) {
+        // special processing for the tab key
         var pos = cm.getCursor();
         var state = cm.getStateAfter(pos.line);
         return state.onTab(cm, pos, state);
     }
 
-    function get_cell_ranges(cm, line) {
+    function getCellRanges(cm, line) {
         var separators,
             ranges,
             startToken,
@@ -426,7 +425,7 @@ define(function (require, exports, module) {
             range;
 
         ranges = [];
-        separators = get_separator_tokens(cm, line);
+        separators = getSeparatorTokens(cm, line);
         for (var i=0; i < separators.length-1; i++) {
             startToken = separators[i];
             endToken = separators[i+1];
@@ -439,8 +438,8 @@ define(function (require, exports, module) {
     }
 
     // Return a list of the contents of all cells on a line
-    function get_cell_contents(cm, line) {
-        var ranges = get_cell_ranges(cm, line);
+    function getCellContents(cm, line) {
+        var ranges = getCellRanges(cm, line);
         var text,
             cells;
 
@@ -460,7 +459,7 @@ define(function (require, exports, module) {
     // This will include a null token at the start if the line
     // doesn't start with a separator token, and a null token
     // at the end if the line doesn't end with a separator token
-    function get_separator_tokens(cm, line) {
+    function getSeparatorTokens(cm, line) {
         var currentLine,
             separators,
             token,
@@ -498,10 +497,10 @@ define(function (require, exports, module) {
         return separators;
     }
 
-    function move_to_next_cell(cm, pos) {
+    function moveToNextCell(cm, pos) {
         // move the cursor to the first character in the next cell
-        var ranges = get_cell_ranges(cm, pos.line);
-        var n = get_current_cell_number(cm, pos);
+        var ranges = getCellRanges(cm, pos.line);
+        var n = getCurrentCellNumber(cm, pos);
         if (n < ranges.length - 1) {
             cm.setCursor(ranges[n+1].start)
             return;
@@ -511,28 +510,19 @@ define(function (require, exports, module) {
         }                
     }
 
-    function fold_all(cm) {
-        var currentLine = null;
-        for (var l = cm.firstLine(); l <= cm.lastLine(); ++l) {
-            var token = cm.getTokenAt({line:l, ch: 1})
-                currentLine = cm.getLine(l);
-                cm.foldCode({line: l, ch: 0}, null, "fold");
-        }
-    }
-
-    function select_current_statement() {
+    function selectCurrentStatement() {
         // Select all of the lines that make up a single statement.
         // It does this by lookup up for the first non-continuation
         // line, and then looking for the next non-continuation line.
         var editor = EditorManager.getCurrentFullEditor()
         var pos = editor.getCursorPos()
-        var start = _find_statement_start(editor, pos);
-        var end = _find_statement_end(editor, pos);
+        var start = _findStatementStart(editor, pos);
+        var end = _findStatementEnd(editor, pos);
         editor.setCursorPos(start);
         editor.setSelection(start, {line: end.line+1, ch: 0});
     }
 
-    function _find_statement_end(editor, pos) {
+    function _findStatementEnd(editor, pos) {
         var nextline = editor.document.getLine(pos.line+1);
         while (nextline && nextline.match(/^\|\s+\|\s+\.\.\.\s+\|($|\s+)/)) {
             pos.line += 1;
@@ -541,7 +531,7 @@ define(function (require, exports, module) {
         return {line: pos.line, ch: pos.ch};
     }
 
-    function _find_statement_start(editor, pos) {
+    function _findStatementStart(editor, pos) {
         var line = editor.document.getLine(pos.line);
         // find start of statement
         while (pos.line > 0 && line.match(/^\|\s+\|\s+\.\.\.\s+\|($|\s+)/)) {
@@ -551,12 +541,12 @@ define(function (require, exports, module) {
         return {line: pos.line, ch: 0};
     }
 
-    exports.select_current_statement = select_current_statement;
-    exports.overlay_mode = overlay_mode;
-    exports.base_mode = base_mode;
-    exports.on_tab = on_tab;
-    exports.on_click = on_click;
-    exports.get_current_cell = get_current_cell;
-    exports.get_current_cell_number = get_current_cell_number;
-    exports.get_cell_contents = get_cell_contents;
+    exports.selectCurrentStatement = selectCurrentStatement;
+    exports.overlayMode = overlayMode;
+    exports.baseMode = baseMode;
+    exports.onTab = onTab;
+    exports.onClick = onClick;
+    exports.getCurrentCell = getCurrentCell;
+    exports.getCurrentCellNumber = getCurrentCellNumber;
+    exports.getCellContents = getCellContents;
 })

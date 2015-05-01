@@ -36,7 +36,7 @@ define(function (require, exports, module) {
         return (stream.current().length > 0);
     }
 
-    function newline_and_indent(cm, pos) {
+    function newlineAndIndent(cm, pos) {
         // insert a newline, then match the indentation of the line
         var currentLine = cm.getLine(pos.line);
         var match = currentLine.match(/^([.|\s]+)/);
@@ -59,7 +59,7 @@ define(function (require, exports, module) {
         // if at EOL, and line ends with space-pipe, remove the space-pipe,
         // insert a newline, and match the leading characters of the line
 
-        if (!state.auto_indent(cm, pos)) {
+        if (!autoIndent(cm, pos)) {
             // if we are at the end of the line and we're not
             // preceeded by a separator AND we're not in a table
             // header, insert a separator. Otherwise, trim the trailing
@@ -69,7 +69,7 @@ define(function (require, exports, module) {
                 if (pos.ch == currentLine.length) { // cursor at eol
                     if (currentLine.match(/\.\.\. +\|\s*$/)) {
                         // continuation line
-                        state.newline_and_indent(cm, pos);
+                        newlineAndIndent(cm, pos);
                         return;
 
                     } else if (currentLine.match(/ +\|\s*$/)) {
@@ -78,7 +78,7 @@ define(function (require, exports, module) {
                         var cursor = cm.getSearchCursor(/(\s+)\|\s*/, pos);
                         var match = cursor.findPrevious();
                         cursor.replace("");
-                        state.newline_and_indent(cm, pos);
+                        newlineAndIndent(cm, pos);
                         return;
 
                     } else if (!currentLine.match(/ \|\s+$/)) {
@@ -94,11 +94,11 @@ define(function (require, exports, module) {
                 }
             }
             // all else fails, try moving to the next column
-            move_to_next_cell(cm, pos);
+            moveToNextCell(cm, pos);
         }
     }
 
-    function auto_indent(cm, pos) {
+    function autoIndent(cm, pos) {
         // attempt to insert an appropriate number of leading
         // pipes and spaces on a line
 
@@ -168,7 +168,5 @@ define(function (require, exports, module) {
 
     exports.isSeparator = isSeparator;
     exports.eatCellContents = eatCellContents;
-    exports.newline_and_indent = newline_and_indent;
-    exports.auto_indent = auto_indent;
     exports.onTab = onTab;
 })

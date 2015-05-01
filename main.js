@@ -56,12 +56,12 @@ define(function (require, exports, module) {
         document.body.appendChild(node);
     }
 
-    function on_click(cm, e) {
+    function onClick(cm, e) {
         // handle triple-click events; this is how we begin support for
         // selecting cell contents with a triple-click
         var editor = EditorManager.getCurrentFullEditor();
         if (editor && editor.getModeForDocument() === "robot") {
-            robot.on_click(cm, e)
+            robot.onClick(cm, e)
         }
     }
 
@@ -81,11 +81,11 @@ define(function (require, exports, module) {
                 // I should probably be using the brackets manager APIs to
                 // do this...
                 var extraKeys = cm.getOption('extraKeys');
-                extraKeys.Tab = robot.on_tab;
-                cm.addOverlay(robot.overlay_mode());
+                extraKeys.Tab = robot.onTab;
+                cm.addOverlay(robot.overlayMode());
 
                 // this is so we can do something special for triple-clicks
-                cm.on("mousedown", on_click);
+                cm.on("mousedown", onClick);
             }
         }
     }
@@ -97,7 +97,7 @@ define(function (require, exports, module) {
         robotMenu = Menus.addMenu("Robot", "robot", Menus.BEFORE, Menus.AppMenuBar.HELP_MENU);
 
         CommandManager.register("Select current statement", SELECT_STATEMENT_ID, 
-                                robot.select_current_statement);
+                                robot.selectCurrentStatement);
         CommandManager.register("Show keyword search window", TOGGLE_KEYWORDS_ID, 
                                 search_keywords.toggleKeywordSearch);
         CommandManager.register("Show runner window", TOGGLE_RUNNER_ID, 
@@ -180,7 +180,7 @@ define(function (require, exports, module) {
     function initializeCodemirror() {
         // All the codemirror stuff to make the mode work...
         var cm = brackets.getModule("thirdparty/CodeMirror2/lib/codemirror");
-        cm.defineMode("robot_argfile", argfile.argfile_mode);
+        cm.defineMode("robot_argfile", argfile.argfileMode);
         cm.defineMIME("text/x-robot-args", "argfile");
         LanguageManager.defineLanguage("robot_argfile", {
             name: "robot_argfile",
@@ -190,8 +190,8 @@ define(function (require, exports, module) {
         });
 
         // the core robot mode
-        cm.defineMode("robot-variable", robot.overlay_mode);
-        cm.defineMode("robot", robot.base_mode);
+        cm.defineMode("robot-variable", robot.overlayMode);
+        cm.defineMode("robot", robot.baseMode);
         cm.defineMIME("text/x-robot", "robot");
         cm.registerHelper("fold", "robot", rangefinder.rangeFinder);
 

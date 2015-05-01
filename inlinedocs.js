@@ -29,8 +29,8 @@ define(function (require, exports, module) {
         // try to find keyword docs, starting at the current cell
         // and working backwards until we find something. 
         var cm = editor._codeMirror;
-        var cells = robot.get_cell_contents(cm, pos.line);
-        var n = robot.get_current_cell_number(cm, pos);
+        var cells = robot.getCellContents(cm, pos.line);
+        var n = robot.getCurrentCellNumber(cm, pos);
         var docs=null;
         var kw;
         

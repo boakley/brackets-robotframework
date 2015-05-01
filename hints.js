@@ -39,7 +39,7 @@ define(function (require, exports, module) {
         var state = cm.getStateAfter(pos.line);
         // FIXME? do I need to compute cell_number when I already
         // have state.column?
-        var cell_number = robot.get_current_cell_number(cm, pos);
+        var cell_number = robot.getCurrentCellNumber(cm, pos);
 
         if (implicitChar === "*") {
             // is it a table heading?
@@ -93,8 +93,8 @@ define(function (require, exports, module) {
         var cm = this.editor._codeMirror;
         var pos = this.editor.getCursorPos();
         var state = cm.getStateAfter(pos.line);
-        var cell = robot.get_current_cell(cm, pos);
-        var cell_number = robot.get_current_cell_number(cm, pos);
+        var cell = robot.getCurrentCell(cm, pos);
+        var cell_number = robot.getCurrentCellNumber(cm, pos);
         var match = "";
         var hints;
 
@@ -107,14 +107,14 @@ define(function (require, exports, module) {
         if (cell.text.match(/^\s*\[/)) {
             // metadata
             match = cell.text.replace(/^\s*\[|\]\s*$/g, "");
-            hints = get_metadata_hints(match, state);
+            hints = getMetadataHints(match, state);
             return {hints: hints, match: match, selectInitial: true};
 
         } else if (cell.text.match(/\s*\$\{/)) {
             // variables
             // FIXME: either remove the current cell from the list,
             // or make it the first item in the list
-            var matches = get_valid_variables(this.editor, pos);
+            var matches = getValidVariables(this.editor, pos);
             if (matches !== null) {
                 matches = matches.filter(function (item, index, inputArray) {
                     // filter the list by only using matches that contain
@@ -124,7 +124,7 @@ define(function (require, exports, module) {
                     var result = (itemname.toLowerCase().indexOf(match.toLowerCase()) === 0);
                     return result;
                 });
-                hints = make_ordered_set(matches);
+                hints = makeOrderedSet(matches);
                 return {hints: hints, match: match, selectInitial: true};
             } else {
                 return {hints: [], match: "", selectInitial: true};
@@ -134,12 +134,12 @@ define(function (require, exports, module) {
             // table headings
             match = cell.text.replace(/^\*+\s*|\*\s*/, '');
 
-            hints = get_heading_hints(match);
+            hints = getHeadingHints(match);
             return {hints: hints, match: match, selectInitial: true};
             
         } else if (state.isSettingsTable() && cell_number === 0) {
             // settings
-            hints = get_settings_hints(cell.text);
+            hints = getSettingsHints(cell.text);
             return {hints: hints, match: cell.text, selectInitial: true};
             
         } else {
@@ -152,7 +152,7 @@ define(function (require, exports, module) {
             var hub_url = prefs.get("hub-url");
             var keyword_url = hub_url + "/api/keywords?pattern=^" + cell.text + "*";
 
-            var keywords = get_local_keywords(this.editor, cell.text);
+            var keywords = getLocalKeywords(this.editor, cell.text);
 
             $.ajaxSetup({ "async": false});
             // We should be able to catch errors via .fail, but
@@ -213,12 +213,12 @@ define(function (require, exports, module) {
     // visible at the current position. What it actually does
     // is return all variables mentioned in the file. Not
     // ideal, but it's a good starting place.
-    function get_valid_variables(editor, pos) {
+    function getValidVariables(editor, pos) {
         var matches = editor.document.getText().match(/\$\{.*?\}/g);
         return matches;
     }
     
-    function get_settings_hints(prefix) {
+    function getSettingsHints(prefix) {
         // I hate hard-coding these. I wish robot had an API I could use
         // to fetch them. 
         var allowable = [
@@ -246,7 +246,7 @@ define(function (require, exports, module) {
         return hints;
     }
 
-    function get_metadata_hints(prefix, state) {
+    function getMetadataHints(prefix, state) {
         var meta = [];
         var hints = [];
         var i;
@@ -269,15 +269,15 @@ define(function (require, exports, module) {
         return hints.sort();
     }
 
-    function escape_regex_chars(str) {
+    function escapeRegexChars(str) {
         // escape characters special to regex; eg * becomes \*
         return (str+'').replace(/[.?*+^$[\]\\(){}|-]/g, "\\$&");
     }
 
-    function get_heading_hints(prefix) {
+    function getHeadingHints(prefix) {
         // Return all possible table headings matching the prefix
 
-        var pattern = new RegExp("^" + escape_regex_chars(prefix), 'i');
+        var pattern = new RegExp("^" + escapeRegexChars(prefix), 'i');
         var tables = ["Keywords", "Settings", "Test Cases", "Variables"];
         var hints = [];
         var i;
@@ -292,7 +292,7 @@ define(function (require, exports, module) {
     // Return a list of local keywords that start with the given pattern
     // Performance note: a quick test showed this to take <10 milliseconds
     // to scan a file of 6000 lines containing 500 keywords. Not too shabby!
-    function get_local_keywords(editor, _pattern) {
+    function getLocalKeywords(editor, _pattern) {
         // this assumes all of the text has been parsed by codemirror. That
         // may not always be true. I need to figure out how to get codemirror
         // to tokenize the whole file...
@@ -317,7 +317,7 @@ define(function (require, exports, module) {
         return keywords;
     }
 
-    function make_ordered_set(array) {
+    function makeOrderedSet(array) {
         // remove duplicates, and do case-insensitive sort
         array = array.filter(function (item, index, inputArray) {
             return inputArray.indexOf(item) === index;

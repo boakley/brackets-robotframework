@@ -7,7 +7,7 @@
 define(function (require, exports, module) {
     "use strict";
 
-    function argfile_mode(config, parserConfig) {
+    function argfileMode(config, parserConfig) {
         // This defines a simple mode for robotframework
         // argument files
 
@@ -50,6 +50,6 @@ define(function (require, exports, module) {
         return mode;
     }
     
-    exports.argfile_mode = argfile_mode;
+    exports.argfileMode = argfileMode;
 
 });
