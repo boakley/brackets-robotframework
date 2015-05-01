@@ -413,8 +413,23 @@ define(function (require, exports, module) {
     function onTab(cm) {
         // special processing for the tab key
         var pos = cm.getCursor();
-        var state = cm.getStateAfter(pos.line);
-        return state.onTab(cm, pos, state);
+        var state;
+
+        if (pos.ch == 0 && pos.line > 0) {
+            // the state of the current line might not be correct if
+            // the user pressed return in the middle of a pipe-
+            // separated line. This, because the newly created line
+            // may not already have a pipe, foiling our format
+            // detection code.  So, a tab at the start of the line
+            // should use the tab handler of the previous line to
+            // account for that.
+            state = cm.getStateAfter(pos.line-1)
+            return state.onTab(cm, pos, state)
+
+        } else {
+            state = cm.getStateAfter(pos.line);
+            return state.onTab(cm, pos, state);
+        }
     }
 
     function getCellRanges(cm, line) {
