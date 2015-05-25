@@ -1,3 +1,17 @@
+## 1.2.0 - 2015-05-01
+
+### Added
+
+* preliminary support for space-separated format
+* :FOR, IN, IN RANGE, AND, and WITH NAME are highlighted
+
+
+### Fixed
+
+* fixed some deprecation warnings
+* continuation in settings table is now highlighted properly
+
+
 ## 1.1.4 - 2015-03-03
 minor bug fix 
 
