@@ -144,17 +144,41 @@ define(function (require, exports, module) {
             }
             return false;
         }
+        if (currentLine.match(/^\|\s+\|\s+\|+$/)) {
+        	if (state.isTestCasesTable() || state.isKeywordsTable()) {
+        		// insert a testcase / keyword :FOR line continuation
+            	cm.replaceRange("| | | ... | ",
+                            {line: pos.line, ch: 0},
+                            {line: pos.line, ch: currentLine.length});
+            	return true;
+        	}
+        	return false;
+        }
         if (currentLine.match(/^\|\s+\|\s+$/)) {
             if (state.isTestCasesTable() || state.isKeywordsTable()) {
-                // insert a testcase / keyword continuation
-                cm.replaceRange("| | ... | ",
+            	var prevLine = cm.getLine(pos.line-1);
+                if (prevLine.match(/^\|\s\|\s\:FOR$/)) {
+                	//insert triple pipes if in ":FOR" block
+                    cm.replaceRange("| | |",
+                            {line: pos.line, ch: 0},
+                            {line: pos.line, ch: currentLine.length});
+                    return true;               
+                } else if (prevLine.match(/^\|\s+\|\s+\|$/)) {
+                	//insert triple pipes if in ":FOR" block
+                    cm.replaceRange("| | |",
                                 {line: pos.line, ch: 0},
                                 {line: pos.line, ch: currentLine.length});
-                return true;
+                    return true;
+                } else {
+                	// insert a testcase / keyword continuation
+                	cm.replaceRange("| | ... | ",
+                                {line: pos.line, ch: 0},
+                                {line: pos.line, ch: currentLine.length});
+                	return true;
+                }
             }
             return false;
         }
-
         if (pos.line > 1 && pos.ch == 0 && currentLine.match(/^[^|]/)) {
             var prevLine = cm.getLine(pos.line-1);
             var match = prevLine.match(/[| .]+/);
